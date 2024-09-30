@@ -128,3 +128,11 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Node.js template lock files
+templates/node-ts/pnpm-lock.yaml
+templates/node-ts/package-lock.json
+templates/node-ts/yarn.lock
+
+# Template env files
+!templates/node-ts/.env
