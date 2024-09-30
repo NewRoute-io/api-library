@@ -1,0 +1,26 @@
+import express from "express";
+import dotenv from "dotenv";
+import helmet from "helmet";
+
+dotenv.config();
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+/*------------- Security Config -------------*/
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use(helmet());
+
+/*------------- Endpoints -------------*/
+
+/**
+ * Example endpoint definition:
+ * 
+ * app.use("/api/user", v1.user);
+ */
+
+/*------------- Error middleware -------------*/
+
+app.listen(PORT, () => console.log(`Service listening on port ${PORT}...`));
