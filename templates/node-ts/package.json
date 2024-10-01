@@ -10,7 +10,7 @@
     "dev": "nodemon ./src/server.ts",
     "prebuild:prod": "pnpm run clean",
     "build:prod":  "NODE_ENV=production tsc",
-    "clean": "rimraf ./dist "
+    "clean": "rimraf ./dist"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
