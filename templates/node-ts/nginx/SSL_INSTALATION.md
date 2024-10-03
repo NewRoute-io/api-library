@@ -18,9 +18,9 @@ sudo certbot certonly --standalone -d yourdomain.com -d www.yourdomain.com
 
 The certificates will be saved in `/etc/letsencrypt/live/yourdomain.com/`.
 
-## 2. Update `nginx.conf` for SSL
+## 2. Modify `nginx.conf` to Enable SSL
 
-Your `nginx.conf` is already set up to handle SSL. Ensure the following lines are included:
+Add the following configuration to your existing `nginx.conf` to enable SSL for your domain. This will listen on port 443 (HTTPS) and use the SSL certificates you generated:
 
 ```nginx
 server {
@@ -28,7 +28,7 @@ server {
     server_name yourdomain.com;
 
     ssl_certificate /etc/ssl/certs/fullchain.pem;
-    ssl_certificate_key /etc/ssl/private/privkey.pem;
+    ssl_certificate_key /etc/ssl/certs/privkey.pem;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
@@ -42,10 +42,19 @@ server {
     }
 }
 ```
+Make sure you keep the existing HTTP configuration (port 80) for handling non-SSL traffic. You can optionally redirect HTTP to HTTPS:
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    return 301 https://$host$request_uri;
+}
+```
 
 ## 3. Mount Certificates in Docker
 
-Ensure your `docker-compose.nginx.yml` mounts the SSL certificates, add the following to `nginx.volumes`. **Replace `yourdomain.com`**:
+Ensure your `docker-compose.yml` mounts the SSL certificates into the NGINX container, add the following to `nginx.volumes`. **Replace `yourdomain.com`**:
 
 ```yaml
 services:
