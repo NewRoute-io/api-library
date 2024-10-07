@@ -1,0 +1,14 @@
+# Dependency directories
+node_modules/
+
+# Build directories
+dist/
+build/
+
+# System files
+.DS_Store      # macOS system files
+Thumbs.db      # Windows system files
+*.swp          # Vim swap files
+
+# Other
+README.md

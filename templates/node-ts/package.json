@@ -1,0 +1,27 @@
+{
+  "name": "node-template",
+  "license": "MIT",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/server.ts",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./src/server.ts",
+    "prebuild:prod": "pnpm run clean",
+    "build:prod":  "NODE_ENV=production tsc",
+    "clean": "rimraf ./dist"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "helmet": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.4",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}

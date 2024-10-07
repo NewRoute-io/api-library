@@ -1,0 +1,17 @@
+services:
+  backend:
+    container_name: backend
+    restart: always
+    build:
+      context: .
+      target: ${NODE_ENV:-development} # Default to development target
+    volumes:
+      - ${VOLUME_MOUNT:-.}:/app # Default to mounting the current directory; PROD CONFIG: We don't want project folder in prod container, set "VOLUME_MOUNT=" to avoid mounting the folder
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - backend-network
+
+networks:
+  backend-network:

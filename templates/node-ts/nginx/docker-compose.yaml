@@ -1,0 +1,17 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+      target: ${NODE_ENV}
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf 
+    depends_on:
+      - backend # Only run NGINX if the backend service is up
+    networks:
+      - ingress-network
+
+networks:
+  ingress-network:
