@@ -8,14 +8,14 @@ import {
 } from "@/middleware/errors.js";
 
 dotenv.config();
-const app = express();
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-/*------------- Security Config -------------*/
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+/*------------- Security Config -------------*/
 app.use(helmet());
 
 /*------------- Endpoints -------------*/

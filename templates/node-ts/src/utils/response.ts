@@ -1,13 +1,10 @@
+import { ResponseError } from "./errors.js";
+
 /**
  * Standardized response format
- * @param {number} status response status (https://developer.mozilla.org/en-US/docs/Web/HTTP/Status).
- * @param {string} message the success or error message.
- * @param {*} params optional parameters to return.
+ * @param {T} data optional parameters to return.
+ * @param {ResponseError | Error} error the success or error message.
  */
-export const response = (status: number, message: string, params: any) => {
-  return {
-    status: status,
-    message: message,
-    params: params,
-  };
+export const response = <T>(data?: T, error?: ResponseError | Error) => {
+  return { data, error: { name: error?.name, message: error?.message } };
 };

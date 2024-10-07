@@ -4,30 +4,19 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 
 // Global Error Handler Middleware
 export const globalErrorHandler = (
-  err: ResponseError,
+  err: ResponseError | Error,
   _req: Request,
   res: Response,
   _next: NextFunction
 ) => {
-  const { message, name } = err;
-  const status = err.status || 500;
-
+  // TODO: Replace with proper logger, e.g. winston
   if (process.env.NODE_ENV !== "production") {
     console.error(`Timestamp: ${new Date().toISOString()}`);
     console.error("Error:", err);
   }
 
-  const errorObj = {
-    error: {
-      name: status !== 500 ? name : "InternalServerError",
-      message:
-        status !== 500
-          ? message
-          : "There was an internal server error, please try again later.",
-    },
-  };
-
-  res.status(status).send(response(status, "Request failed", errorObj));
+  const responseStatus = err instanceof ResponseError ? err.status : 500;
+  res.status(responseStatus).send(response(undefined, err));
 };
 
 // Middleware for handling requests that don't match any available router

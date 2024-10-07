@@ -1,67 +1,42 @@
-export interface ResponseError extends Error {
-  status?: number;
+export class ResponseError extends Error {
+  status: number;
+  name: string;
+
+  constructor(name: string, message: string, status: number) {
+    super(message);
+    this.name = name;
+    this.status = status;
+  }
 }
 
 export const notImplementedError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Not Implemented";
-  error.name = "NotImplementedError";
-  error.status = 501;
-  return error;
+  return new ResponseError("NotImplementedError", "Not Implemented", 501);
 };
 
 export const badRequestError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Bad Request";
-  error.name = "BadRequestError";
-  error.status = 400;
-  return error;
+  return new ResponseError("BadRequestError", "Bad Request", 400);
 };
 
 export const unauthorizedError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Unauthorized";
-  error.name = "UnauthorizedError";
-  error.status = 401;
-  return error;
+  return new ResponseError("UnauthorizedError", "Unauthorized", 401);
 };
 
 export const forbiddenError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Forbidden";
-  error.name = "ForbiddenError";
-  error.status = 403;
-  return error;
+  return new ResponseError("ForbiddenError", "Forbidden", 403);
 };
 
 export const notFoundError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Resource Not Found";
-  error.name = "NotFoundError";
-  error.status = 404;
-  return error;
+  return new ResponseError("NotFoundError", "Resource Not Found", 404);
 };
 
 export const internalServerError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Internal Server Error";
-  error.name = "InternalServerError";
-  error.status = 500;
-  return error;
+  return new ResponseError("InternalServerError", "Internal Server Error", 500);
 };
 
 export const tooManyRequestsError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Too Many Requests";
-  error.name = "TooManyRequestsError";
-  error.status = 429;
-  return error;
+  return new ResponseError("TooManyRequestsError", "Too Many Requests", 429);
 };
 
 export const requestTimeoutError = () => {
-  const error: ResponseError = new Error();
-  error.message = "Request Timeout";
-  error.name = "RequestTimeoutError";
-  error.status = 408;
-  return error;
+  return new ResponseError("RequestTimeoutError", "Request Timeout", 408);
 };
