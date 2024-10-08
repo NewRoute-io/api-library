@@ -5,9 +5,10 @@
       "noEmit": true,
       "incremental": true,
       "isolatedModules": true,
+      "rootDir": ".",
       "baseUrl": ".",
       "paths": {"@/*": ["./*"]},
     },
-    "include": ["modules/*"],
+    "include": ["./modules/"],
     "exclude": ["node_modules"]
   }

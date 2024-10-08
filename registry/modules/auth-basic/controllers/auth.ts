@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import argon from "argon2";
 
-type AuthMiddlewareOptions = {
+type AuthOptions = {
   usernameField?: string;
   passwordField?: string;
 };
 
-interface SignupMiddlewareOptions extends AuthMiddlewareOptions {
+interface SignupOptions extends AuthOptions {
   passwordRegex?: string;
   // TODO: Add database dependency
 }
 
-export const signup = (options: SignupMiddlewareOptions) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+export const signup = (options: SignupOptions) => {
+  return async (req: Request, _: Response, next: NextFunction) => {
     const username = req.body[options.usernameField || "username"];
     const password = req.body[options.passwordField || "password"];
     // TODO: Add field validation
@@ -33,8 +33,8 @@ export const signup = (options: SignupMiddlewareOptions) => {
   };
 };
 
-export const login = (options: AuthMiddlewareOptions) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+export const login = (options: AuthOptions) => {
+  return async (req: Request, _: Response, next: NextFunction) => {
     const username = req.body[options.usernameField || "username"];
     const password = req.body[options.passwordField || "password"];
 
