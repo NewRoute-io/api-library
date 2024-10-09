@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 /**
- * Example public/private keys
+ * Example reading public/private keys from a "./keys" folder in rootDir
  *
  * const JWT_PUBLIC_KEY = fs.readFileSync(path.join(process.cwd(), "/keys/jwt_public.key"), { encoding: 'utf8' });
  * const JWT_PRIVATE_KEY = fs.readFileSync(path.join(process.cwd(), "/keys/jwt_private.key"), { encoding: 'utf8' });

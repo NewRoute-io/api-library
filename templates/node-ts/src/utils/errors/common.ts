@@ -1,13 +1,4 @@
-export class ResponseError extends Error {
-  status: number;
-  name: string;
-
-  constructor(name: string, message: string, status: number) {
-    super(message);
-    this.name = name;
-    this.status = status;
-  }
-}
+import { ResponseError } from "@/utils/errors/index.js";
 
 export const notImplementedError = () => {
   return new ResponseError("NotImplementedError", "Not Implemented", 501);

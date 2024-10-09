@@ -1,14 +1,18 @@
 {
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "extends": "../templates/node-ts/tsconfig.json",
-    "compilerOptions": {
-      "noEmit": true,
-      "incremental": true,
-      "isolatedModules": true,
-      "rootDir": ".",
-      "baseUrl": ".",
-      "paths": {"@/*": ["./*"]},
-    },
-    "include": ["./modules/"],
-    "exclude": ["node_modules"]
-  }
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../templates/node-ts/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": true,
+    "isolatedModules": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@/schemas/auth.js": ["schemaValidators/auth-basic.zod.ts"] // During API module development we default to using `zod`. `@/schemas/auth.js` corresponds to the path alias used in
+      // DEV NOTE: When adding new modules which use schema validators add your path alias here so it doesn't break when imported in the main project
+    }
+  },
+  "include": ["./modules/**/*", "./schemaValidators/**/*"],
+  "exclude": ["node_modules"]
+}
