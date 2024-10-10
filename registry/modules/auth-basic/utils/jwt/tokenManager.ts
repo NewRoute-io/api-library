@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 
+import { jwtEnvVariablesMissing } from "@/modules/auth-basic/utils/errors/auth.js";
+
 /**
  * Example reading public/private keys from a "./keys" folder in rootDir
  *
@@ -20,8 +22,7 @@ const TokenManager = (
   options: jwt.SignOptions | jwt.VerifyOptions
 ) => {
   if (!JWT_SECRET_KEY || !JWT_ISSUER) {
-    // TODO: Throw errors of missing env variables
-    throw new Error();
+    throw jwtEnvVariablesMissing();
   }
 
   const algorithm = "HS256";
