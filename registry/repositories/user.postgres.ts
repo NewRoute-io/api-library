@@ -5,7 +5,7 @@ import {
   AuthBasicSignup,
 } from "@/repositories/user.interface.js";
 
-export function createUserRepository(): UserRepository {
+export const createUserRepository = (): UserRepository => {
   return {
     async getUser(username: string): Promise<User | null> {
       const result = await pgPool.query<User>(
@@ -31,4 +31,4 @@ export function createUserRepository(): UserRepository {
       return result.rows[0];
     },
   };
-}
+};

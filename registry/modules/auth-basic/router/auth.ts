@@ -1,6 +1,6 @@
 import express from "express";
 
-import { validateBasicAuthReq } from "@/schemas/auth.js";
+import { basicAuthValidator } from "@/schemas/auth-basic.js";
 
 import { createAuthBasicController } from "@/modules/auth-basic/controllers/authBasic.js";
 import { createUserRepository } from "@/repositories/user.js";
@@ -15,7 +15,8 @@ const authBasicController = createAuthBasicController(userRepository);
 router.post("/signup", async (req, res, next) => {
   const payload = req.body;
 
-  await validateBasicAuthReq(payload)
+  await basicAuthValidator()
+    .validate(payload)
     .then(authBasicController.signup)
     .then((result) => res.json(response(result)))
     .catch(next);
@@ -24,7 +25,8 @@ router.post("/signup", async (req, res, next) => {
 router.post("/login", async (req, res, next) => {
   const payload = req.body;
 
-  await validateBasicAuthReq(payload)
+  await basicAuthValidator()
+    .validate(payload)
     .then(authBasicController.login)
     .then((result) => res.json(response(result)))
     .catch(next);

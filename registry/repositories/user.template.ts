@@ -15,7 +15,7 @@ import {
   AuthBasicSignup,
 } from "@/repositories/user.interface.js";
 
-export function createUserRepository(): UserRepository {
+export const createUserRepository = (): UserRepository => {
   return {
     async getUser(username: string): Promise<User | null> {
       // REPLACE: Implement user retrieval with your DB of choice

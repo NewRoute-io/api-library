@@ -1,14 +1,15 @@
 import yup from "yup";
+import { BasicAuthSchema, BasicAuthValidator } from "./auth-basic.interface.js";
 
 const basicAuthSchema = yup.object({
   username: yup.string().required(),
   password: yup.string().required(),
 });
 
-export type BasicAuth = yup.InferType<typeof basicAuthSchema>;
-
-export const validateBasicAuthReq = async (
-  payload: BasicAuth
-): Promise<BasicAuth> => {
-  return await basicAuthSchema.noUnknown().strict(true).validate(payload);
+export const basicAuthValidator = (): BasicAuthValidator => {
+  return {
+    async validate(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
+      return await basicAuthSchema.noUnknown().strict(true).validate(payload);
+    },
+  };
 };
