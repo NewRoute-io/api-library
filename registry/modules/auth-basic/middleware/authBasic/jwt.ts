@@ -1,33 +1,40 @@
-import { NextFunction, Request, Response } from "express";
+import { RequestHandler } from "express";
 
-import { tokenManager } from "@/modules/auth-basic/utils/jwt/tokenManager.js";
-import { notAuthenticated } from "@/modules/auth-basic/utils/errors/auth.js";
+import { createUserRepository } from "@/repositories/user.js";
+
+import { accessTokenManager } from "@/modules/auth-basic/utils/jwt/tokenManager.js";
+import { notAuthenticated, invalidAccessToken } from "@/modules/auth-basic/utils/errors/auth.js";
+
+const userRepository = createUserRepository();
 
 /**
  * Middleware that can be used to protect a route/endpoint
  *
- * Extracts JWT token from the `Authorization` header with scheme `Bearer`
+ * Extracts JWT token from the `Authorization` header with scheme `bearer`
  *
  * @see {scheme} To define a custom Authorization header JWT scheme
  */
-export const protectedRoute = () => {
-  return async (req: Request, _: Response, next: NextFunction) => {
-    const authHeader = req.header("Authorization");
-    const scheme = "Bearer ";
+export const protectedRoute = (): RequestHandler => async (req, _, next) => {
+  const authHeader = req.header("authorization");
 
-    if (!authHeader) {
-      return next(notAuthenticated);
-    }
+  if (!authHeader) {
+    return next(notAuthenticated);
+  }
 
-    const accessToken = authHeader.replace(scheme, "");
+  const scheme = "bearer ";
+  const accessToken = authHeader.replace(scheme, "");
 
-    try {
-      tokenManager.validate(accessToken);
-      // TODO: Get user from DB
+  try {
+    const { userId } = accessTokenManager.validate(accessToken);
+    const user = await userRepository.getUserById(userId);
 
-      // TODO: Attach user to req.user
-
+    if (user) {
+      req.user = user;
       next();
-    } catch (err) {}
-  };
+    } else {
+      next(invalidAccessToken);
+    }
+  } catch (err) {
+    next(err);
+  }
 };

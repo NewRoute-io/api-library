@@ -16,18 +16,20 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string; // Randomly generat
  *
  * @see {algorithm} Use the `RS256` (or equivalent) algorithm with public/private keys if you are building a distributed system or the JWT token will be shared between services
  */
-const TokenManager = (
+const TokenManager = <T extends string | Buffer | object>(
   secretOrPrivateKey: string,
   secretOrPublicKey: string,
   options: jwt.SignOptions | jwt.VerifyOptions
 ) => {
+
+  // TODO: Replace with a package that checks if all .env variables in .env.sample are configured on build
   if (!JWT_SECRET_KEY || !JWT_ISSUER) {
     throw jwtEnvVariablesMissing();
   }
 
   const algorithm = "HS256";
 
-  const sign = (payload: string, signOptions?: jwt.SignOptions) => {
+  const sign = (payload: T, signOptions?: jwt.SignOptions) => {
     const jwtSignOptions = Object.assign({ algorithm }, signOptions, options);
     return jwt.sign(payload, secretOrPrivateKey, jwtSignOptions);
   };
@@ -38,13 +40,21 @@ const TokenManager = (
       verifyOptions,
       options
     );
-    return jwt.verify(token, secretOrPublicKey, jwtVerifyOptions);
+    return jwt.verify(token, secretOrPublicKey, jwtVerifyOptions) as T;
   };
 
   return { validate, sign };
 };
 
-export const tokenManager = TokenManager(JWT_SECRET_KEY, JWT_SECRET_KEY, {
-  issuer: JWT_ISSUER,
-  audience: `${JWT_ISSUER}:client`,
-});
+type JWTAccessToken = {
+  userId: string;
+}
+
+export const accessTokenManager = TokenManager<JWTAccessToken>(
+  JWT_SECRET_KEY,
+  JWT_SECRET_KEY,
+  {
+    issuer: JWT_ISSUER,
+    audience: `${JWT_ISSUER}:client`,
+  }
+);

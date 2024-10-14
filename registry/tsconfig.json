@@ -9,10 +9,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@/schemas/auth.js": ["schemaValidators/auth-basic.zod.ts"] // During API module development we default to using `zod`. `@/schemas/auth.js` corresponds to the path alias used in
-      // DEV NOTE: When adding new modules which use schema validators add your path alias here so it doesn't break when imported in the main project
+      "@/schemas/auth.js": ["schemaValidators/auth-basic.zod.ts"], // In dev we default to using `zod`
+      "@/repositories/user.js": ["repositories/user.postgres.ts"] // In dev we default to using PG repositories. `@/repositories/user.js`
+
+      // DEV NOTE: When adding new modules which use schema validators or repositories add your path alias here so it doesn't break when imported in the main project
     }
   },
-  "include": ["./modules/**/*", "./schemaValidators/**/*"],
+  "include": ["./modules/**/*", "./schemaValidators/**/*", "./repositories/**/*"],
   "exclude": ["node_modules"]
 }

@@ -1,10 +1,18 @@
-import { ResponseError } from "@/modules/shared/utils/errors/index.js";
+import { ResponseError } from "@/modules/shared/utils/errors/ResponseError.js";
 
 export const jwtEnvVariablesMissing = () => {
   return new ResponseError(
     "JWTEnvVariableMissing",
     "JWT env variables missing from your .env file",
     500
+  );
+};
+
+export const invalidAccessToken = () => {
+  return new ResponseError(
+    "InvalidAccessToken",
+    "The JWT Access Token is not valid, please log in your account again.",
+    400
   );
 }
 

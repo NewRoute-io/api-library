@@ -9,11 +9,13 @@
     "argon2": "^0.41.1",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.0",
     "yup": "^1.4.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
-    "@types/jsonwebtoken": "^9.0.7"
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/pg": "^8.11.10"
   }
 }
