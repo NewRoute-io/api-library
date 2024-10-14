@@ -1,4 +1,4 @@
-import { ResponseError } from "./errors/index.js";
+import { ResponseError } from "./errors/ResponseError.js";
 
 /**
  * Standardized response format
