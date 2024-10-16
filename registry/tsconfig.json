@@ -8,11 +8,7 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/schemas/auth-basic.js": ["schemaValidators/auth-basic.zod.ts"], // In dev we default to using `zod`
-      "@/repositories/user.js": ["repositories/user.postgres.ts"] // In dev we default to using PG repositories. `@/repositories/user.js`
-
-      // DEV NOTE: When adding new modules which use schema validators or repositories add your path alias here so it doesn't break when imported in the main project
+      "@/*": ["./*"]
     }
   },
   "include": ["./modules/**/*", "./schemaValidators/**/*", "./repositories/**/*"],

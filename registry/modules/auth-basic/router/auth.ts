@@ -1,9 +1,9 @@
 import express from "express";
 
-import { basicAuthValidator } from "@/schemas/auth-basic.js";
+import { basicAuthValidator } from "@/schemaValidators/auth-basic.zod.js";
 
 import { createAuthBasicController } from "@/modules/auth-basic/controllers/authBasic.js";
-import { createUserRepository } from "@/repositories/user.js";
+import { createUserRepository } from "@/repositories/user.postgres.js";
 
 import { response } from "@/modules/shared/utils/response.js";
 
