@@ -1,4 +1,4 @@
-import { ResponseError } from "@/utils/errors/index.js";
+import { ResponseError } from "@/utils/errors/ResponseError.js";
 
 export const notImplementedError = () => {
   return new ResponseError("NotImplementedError", "Not Implemented", 501);
