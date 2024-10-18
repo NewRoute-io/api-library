@@ -1,5 +1,6 @@
 import { response } from "@/utils/response.js";
-import { ResponseError, notImplementedError } from "@/utils/errors.js";
+import { notImplementedError } from "@/utils/errors/common.js";
+import { ResponseError } from "@/utils/errors/ResponseError.js";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 
 // Global Error Handler Middleware
