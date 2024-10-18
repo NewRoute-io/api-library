@@ -22,7 +22,7 @@ export const createAuthBasicController = (userRepo: UserRepository) => {
       const { username, password } = props;
 
       await userRepo.getUser(username).then((res) => {
-        if (res === null) throw usernameNotAvailable();
+        if (res !== null) throw usernameNotAvailable();
       });
 
       // timeCost, parallelism and memoryCost configured according to OWASP recommendations: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html

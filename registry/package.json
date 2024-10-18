@@ -2,7 +2,7 @@
   "name": "registry",
   "version": "1.0.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "type": "module",
   "dependencies": {
@@ -16,6 +16,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/pg": "^8.11.10"
+    "@types/pg": "^8.11.10",
+    "vitest": "^2.1.3"
   }
 }
