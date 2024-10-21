@@ -1,11 +1,11 @@
 import { response } from "@/utils/response.js";
 import { notImplementedError } from "@/utils/errors/common.js";
-import { ResponseError } from "@/utils/errors/ResponseError.js";
+import { HttpError } from "@/utils/errors/HttpError.js";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 
 // Global Error Handler Middleware
 export const globalErrorHandler = (
-  err: ResponseError | Error,
+  err: HttpError | Error,
   _req: Request,
   res: Response,
   _next: NextFunction
@@ -16,7 +16,7 @@ export const globalErrorHandler = (
     console.error("Error:", err);
   }
 
-  const responseStatus = err instanceof ResponseError ? err.status : 500;
+  const responseStatus = err instanceof HttpError ? err.status : 500;
   res.status(responseStatus).send(response(undefined, err));
 };
 

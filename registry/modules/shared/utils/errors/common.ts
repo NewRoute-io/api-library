@@ -1,4 +1,4 @@
-import { HttpError } from "@/utils/errors/HttpError.js";
+import { HttpError } from "@/modules/shared/utils/errors/HttpError.js";
 
 export const notImplementedError = () => {
   return new HttpError("NotImplementedError", "Not Implemented", 501);

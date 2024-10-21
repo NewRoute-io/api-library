@@ -1,7 +1,7 @@
-import { ResponseError } from "@/modules/shared/utils/errors/ResponseError.js";
+import { HttpError } from "@/modules/shared/utils/errors/HttpError.js";
 
 export const jwtEnvVariablesMissing = () => {
-  return new ResponseError(
+  return new HttpError(
     "JWTEnvVariableMissing",
     "JWT env variables missing from your .env file",
     500
@@ -9,7 +9,7 @@ export const jwtEnvVariablesMissing = () => {
 };
 
 export const invalidAccessToken = () => {
-  return new ResponseError(
+  return new HttpError(
     "InvalidAccessToken",
     "The JWT Access Token is not valid, please log in your account again.",
     400
@@ -17,7 +17,7 @@ export const invalidAccessToken = () => {
 }
 
 export const invalidLoginCredentials = () => {
-  return new ResponseError(
+  return new HttpError(
     "InvalidLoginCredentials",
     "Your login credentials are not correct, please try logging in again.",
     409
@@ -25,7 +25,7 @@ export const invalidLoginCredentials = () => {
 };
 
 export const notAuthenticated = () => {
-  return new ResponseError(
+  return new HttpError(
     "NotAuthenticated",
     "User not authenticated, please log into your account and try again.",
     401
@@ -33,7 +33,7 @@ export const notAuthenticated = () => {
 };
 
 export const usernameNotAvailable = () => {
-  return new ResponseError(
+  return new HttpError(
     "UsernameNotAvailable",
     "This username is already taken, please choose another one.",
     409

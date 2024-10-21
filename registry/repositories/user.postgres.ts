@@ -19,7 +19,7 @@ export const createUserRepository = (): UserRepository => {
         values: [username],
       };
       const result = await pgPool.query<User>(query);
-      return result.rows.length ? result.rows[0] : null;
+      return result.rows.at(0) || null;
     },
 
     async getUserById(userId: string): Promise<User | null> {
@@ -33,7 +33,7 @@ export const createUserRepository = (): UserRepository => {
         values: [userId],
       };
       const result = await pgPool.query<User>(query);
-      return result.rows.length ? result.rows[0] : null;
+      return result.rows.at(0) || null;
     },
 
     async createAuthBasicUser(data: AuthBasicSignup): Promise<User> {

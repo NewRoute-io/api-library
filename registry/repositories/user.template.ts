@@ -15,24 +15,23 @@ import {
   AuthBasicSignup,
 } from "@/repositories/user.interface.js";
 
+import { notImplementedError } from "@/modules/shared/utils/errors/common.js";
+
 export const createUserRepository = (): UserRepository => {
   return {
     async getUser(username: string): Promise<User | null> {
       // REPLACE: Implement user retrieval with your DB of choice
-
-      return null;
+      throw notImplementedError(); // Remove when implemented
     },
 
     async getUserById(userId: string): Promise<User | null> {
       // REPLACE: Implement user retrieval by ID with your DB of choice
-
-      return null;
+      throw notImplementedError(); // Remove when implemented
     },
 
     async createAuthBasicUser(data: AuthBasicSignup): Promise<User> {
       // REPLACE: Implement user creation with your DB of choice
-
-      return {} as User; // REPLACE: Replace with user object from DB, implemented like this so it doesn't throw type error
+      throw notImplementedError(); // Remove when implemented
     },
   };
 }
