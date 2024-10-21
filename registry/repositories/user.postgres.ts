@@ -12,7 +12,7 @@ export const createUserRepository = (): UserRepository => {
       const query: QueryConfig = {
         name: "queryGetUserByUsername",
         text: `
-          SELECT user_id, username, password, created_at
+          SELECT id, username, password, created_at
           FROM users 
           WHERE username = $1;
         `,
@@ -26,9 +26,9 @@ export const createUserRepository = (): UserRepository => {
       const query: QueryConfig = {
         name: "queryGetUserById",
         text: `
-          SELECT user_id, username, password, created_at
+          SELECT id, username, password, created_at
           FROM users 
-          WHERE user_id = $1;
+          WHERE id = $1;
         `,
         values: [userId],
       };
@@ -42,7 +42,7 @@ export const createUserRepository = (): UserRepository => {
         text: `
           INSERT INTO users (username, password) 
           VALUES ($1, $2) 
-          RETURNING user_id, username, password, created_at;
+          RETURNING id, username, password, created_at;
         `,
         values: [data.username, data.hashedPass],
       };
