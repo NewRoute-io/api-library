@@ -7,12 +7,14 @@ import {
   GetObjectCommand,
   S3Client,
   ListObjectsV2Command,
+  DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 import {
   GetFileSchema,
   ListFilesSchema,
+  DeleteFilesSchema
 } from "@/schemaValidators/storeFile.interface.js";
 
 import {
@@ -36,7 +38,7 @@ interface StoreFileS3Controller {
   uploadFile: (req: Request) => Promise<{ s3Locations: FileLocationsArray }>;
   downloadFile: (props: GetFileSchema) => Promise<GetObjectCommandOutput>;
   getFileList: (props: ListFilesSchema) => Promise<FileListOutput>;
-  deleteFiles: (props: GetFileSchema) => void;
+  deleteFiles: (props: DeleteFilesSchema) => void;
 };
 
 export const createStoreFileS3Controller = (): StoreFileS3Controller => {
@@ -111,8 +113,15 @@ export const createStoreFileS3Controller = (): StoreFileS3Controller => {
       return { files: fileNames, nextToken: list.ContinuationToken };
     },
 
-    async deleteFiles({ fileName }) {
+    async deleteFiles({ files }) {
+        const deleteObjectsKeys = files.map((el) => ({ Key: el }));
         
+        await s3Client.send(
+          new DeleteObjectsCommand({
+            Bucket: S3_BUCKET_NAME,
+            Delete: { Objects: deleteObjectsKeys },
+          })
+        );
     },
   };
 };

@@ -6,9 +6,16 @@ export type ListFilesSchema = {
   pageToken?: string;
 };
 
+export type DeleteFilesSchema = {
+  files: string[];
+};
+
 export interface StoreFileValidator {
-  validateGetFile: (basicAuthSchema: GetFileSchema) => Promise<GetFileSchema>;
+  validateGetFile: (getFilePayload: GetFileSchema) => Promise<GetFileSchema>;
   validateListFiles: (
-    basicAuthSchema: ListFilesSchema
+    listFilesPayload: ListFilesSchema
   ) => Promise<ListFilesSchema>;
+  validateDeleteFiles: (
+    deleteFilesPayload: DeleteFilesSchema
+  ) => Promise<DeleteFilesSchema>;
 }

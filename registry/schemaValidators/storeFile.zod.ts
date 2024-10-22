@@ -3,6 +3,7 @@ import {
   GetFileSchema,
   ListFilesSchema,
   StoreFileValidator,
+  DeleteFilesSchema,
 } from "./storeFile.interface.js";
 
 const getFileSchema = z.object({
@@ -13,6 +14,10 @@ const listFilesSchema = z.object({
   pageToken: z.string().optional(),
 });
 
+const deleteFilesSchema = z.object({
+  files: z.array(z.string()),
+});
+
 export const storeFileValidator = (): StoreFileValidator => {
   return {
     async validateGetFile(payload): Promise<GetFileSchema> {
@@ -21,6 +26,10 @@ export const storeFileValidator = (): StoreFileValidator => {
 
     async validateListFiles(payload): Promise<ListFilesSchema> {
       return await listFilesSchema.parseAsync(payload);
+    },
+
+    async validateDeleteFiles(payload): Promise<DeleteFilesSchema> {
+      return await deleteFilesSchema.parseAsync(payload);
     },
   };
 };

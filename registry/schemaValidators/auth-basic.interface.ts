@@ -4,5 +4,5 @@ export type BasicAuthSchema = {
 };
 
 export interface BasicAuthValidator {
-  validate: (basicAuthSchema: BasicAuthSchema) => Promise<BasicAuthSchema>;
+  validate: (basicAuthPayload: BasicAuthSchema) => Promise<BasicAuthSchema>;
 }

@@ -2,12 +2,12 @@ import express from "express";
 
 import { storeFileValidator } from "@/schemaValidators/storeFile.zod.js";
 
+import { createStoreFileS3Controller } from "@/modules/upload-to-s3/controllers/storeFileS3.js";
 import { protectedRoute } from "@/modules/auth-basic/middleware/authBasic/jwt.js";
 
 import { response } from "@/modules/shared/utils/response.js";
-import { createStoreFileS3Controller } from "@/modules/upload-to-s3/controllers/storeFileS3.js";
 
-const storeFileController = createStoreFileS3Controller()
+const storeFileController = createStoreFileS3Controller();
 const router = express.Router();
 
 router.post("/upload", protectedRoute, async (req, res, next) => {
@@ -17,8 +17,31 @@ router.post("/upload", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-router.get("/:fileKey", protectedRoute, async (req, res, next) => {
-    const fileName = req.params.reqKey;
+router
+  .route("/files")
+  .get(protectedRoute, async (req, res, next) => {
+    const pageToken = req.query.pageToken as string;
+
+    await storeFileValidator()
+      .validateListFiles({ pageToken })
+      .then(storeFileController.getFileList)
+      .then((result) => res.json(response(result)))
+      .catch(next);
+  })
+  .delete(protectedRoute, async (req, res, next) => {
+    const payload = req.body;
+
+    await storeFileValidator()
+      .validateDeleteFiles(payload)
+      .then(storeFileController.deleteFiles)
+      .then((result) => res.json(response(result)))
+      .catch(next);
+  });
+
+router
+  .route("/:fileKey")
+  .get(protectedRoute, async (req, res, next) => {
+    const fileName = req.params.fileKey;
 
     await storeFileValidator()
       .validateGetFile({ fileName })
@@ -36,18 +59,15 @@ router.get("/:fileKey", protectedRoute, async (req, res, next) => {
         res.send(result.Body);
       })
       .catch(next);
-})
-
-router.get("/files", protectedRoute, async (req, res, next) => {
-    const pageToken = req.query.pageToken as string;
+  })
+  .delete(protectedRoute, async (req, res, next) => {
+    const fileName = req.params.fileKey;
 
     await storeFileValidator()
-      .validateListFiles({ pageToken })
-      .then(storeFileController.getFileList)
+      .validateDeleteFiles({ files: [fileName] })
+      .then(storeFileController.deleteFiles)
       .then((result) => res.json(response(result)))
       .catch(next);
   });
-
-// TODO: Route to delete files
 
 export { router as storeFileS3Router };
