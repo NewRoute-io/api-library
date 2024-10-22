@@ -8,9 +8,14 @@ import {
   invalidLoginCredentials,
 } from "@/modules/auth-basic/utils/errors/auth.js";
 
-import { UserRepository } from "@/repositories/user.interface.js";
+import { User, UserRepository } from "@/repositories/user.interface.js";
 
-export const createAuthBasicController = (userRepo: UserRepository) => {
+type AuthBasicController = {
+  login: (props: BasicAuthSchema) => Promise<{user: User, accessToken: string}>
+  signup: (props: BasicAuthSchema) => Promise<{user: User, accessToken: string}>
+}
+
+export const createAuthBasicController = (userRepo: UserRepository): AuthBasicController => {
   const generateAccessToken = (userId: string) => {
     const signedJWT = accessTokenManager.sign({ userId });
 
@@ -18,7 +23,7 @@ export const createAuthBasicController = (userRepo: UserRepository) => {
   };
 
   return {
-    async signup(props: BasicAuthSchema) {
+    async signup(props) {
       const { username, password } = props;
 
       await userRepo.getUser(username).then((res) => {
@@ -38,7 +43,7 @@ export const createAuthBasicController = (userRepo: UserRepository) => {
       return { user: newUser, accessToken };
     },
     
-    async login(props: BasicAuthSchema) {
+    async login(props) {
       const { username, password } = props;
 
       const user = await userRepo.getUser(username).then((res) => {

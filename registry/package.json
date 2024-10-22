@@ -6,8 +6,11 @@
   },
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.676.0",
+    "@aws-sdk/lib-storage": "^3.676.0",
     "argon2": "^0.41.1",
     "express": "^4.21.0",
+    "formidable": "^3.5.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.13.0",
     "yup": "^1.4.0",
@@ -15,6 +18,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/pg": "^8.11.10",
     "vitest": "^2.1.3"
