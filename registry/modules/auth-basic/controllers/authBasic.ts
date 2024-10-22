@@ -10,7 +10,7 @@ import {
 
 import { User, UserRepository } from "@/repositories/user.interface.js";
 
-type AuthBasicController = {
+interface AuthBasicController {
   login: (props: BasicAuthSchema) => Promise<{user: User, accessToken: string}>
   signup: (props: BasicAuthSchema) => Promise<{user: User, accessToken: string}>
 }

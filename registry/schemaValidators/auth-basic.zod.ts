@@ -13,7 +13,7 @@ const basicAuthSchema = z.object({
 
 export const basicAuthValidator = (): BasicAuthValidator => {
   return {
-    async validate(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
+    async validate(payload): Promise<BasicAuthSchema> {
       return await basicAuthSchema.parseAsync(payload);
     },
   };

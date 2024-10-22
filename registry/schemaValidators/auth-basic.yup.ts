@@ -14,7 +14,7 @@ const basicAuthSchema = yup.object({
 
 export const basicAuthValidator = (): BasicAuthValidator => {
   return {
-    async validate(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
+    async validate(payload): Promise<BasicAuthSchema> {
       return await basicAuthSchema.noUnknown().strict(true).validate(payload);
     },
   };

@@ -17,3 +17,19 @@ export const s3UploadFailed = () => {
     400
   );
 };
+
+export const errorDownloadingS3File = (fileName: string) => {
+  return new HttpError(
+    "ErrorDownloadingS3File",
+    `There was a problem when trying to download file ${fileName} from your S3 storage`,
+    404
+  );
+};
+
+export const cantGetS3Files = () => {
+  return new HttpError(
+    "CantGetS3Files",
+    `Fetching all your S3 files failed.`,
+    404
+  );
+};
