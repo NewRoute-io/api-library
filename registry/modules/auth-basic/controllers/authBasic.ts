@@ -26,9 +26,8 @@ export const createAuthBasicController = (
   };
 
   const generateRefreshToken = async (userId: string, tokenFamily?: string) => {
-    const now = new Date();
-    now.setDate(now.getDate() + 31);
-    const refreshTokenExp = now.toISOString();
+    const expAt = new Date(new Date().getTime() + 31 * 24 * 60 * 6000); // Expire in 31 days
+    const refreshTokenExp = expAt.toISOString();
 
     const token = await refreshTokenRepo.createToken({
       userId,
@@ -91,12 +90,7 @@ export const createAuthBasicController = (
 
       if (!tokenData) throw forbiddenError();
 
-      const { userId, tokenFamily, active, expiresAt } = tokenData;
-
-      const now = new Date();
-      const tokenExpiry = new Date(expiresAt);
-
-      if (tokenExpiry < now) throw forbiddenError();
+      const { userId, tokenFamily, active } = tokenData;
 
       if (active) {
         // Token is valid and hasn't been used yet
