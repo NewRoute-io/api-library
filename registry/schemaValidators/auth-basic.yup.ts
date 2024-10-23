@@ -12,11 +12,21 @@ const basicAuthSchema = yup.object({
     .required(),
 });
 
+const refreshTokenSchema = yup.object({
+  token: yup.string().uuid().required(),
+});
+
 export const basicAuthValidator = (): BasicAuthValidator => {
   return {
-    async validate(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
+    async validateAuth(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
       return await basicAuthSchema.noUnknown().strict(true).validate(payload);
+    },
+
+    async validateRefreshToken(payload) {
+      return await refreshTokenSchema
+        .noUnknown()
+        .strict(true)
+        .validate(payload);
     },
   };
 };
- 

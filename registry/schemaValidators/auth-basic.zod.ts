@@ -11,10 +11,18 @@ const basicAuthSchema = z.object({
     .regex(/\d/, "Password must contain at least one number"),
 });
 
+const refreshTokenSchema = z.object({
+  token: z.string().uuid()
+})
+
 export const basicAuthValidator = (): BasicAuthValidator => {
   return {
-    async validate(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
+    async validateAuth(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
       return await basicAuthSchema.parseAsync(payload);
+    },
+
+    async validateRefreshToken(payload) {
+      return await refreshTokenSchema.parseAsync(payload);
     },
   };
 };
