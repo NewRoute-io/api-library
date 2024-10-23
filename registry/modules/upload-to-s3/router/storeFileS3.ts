@@ -1,4 +1,5 @@
 import express from "express";
+import { S3Client } from "@aws-sdk/client-s3";
 
 import { storeFileValidator } from "@/schemaValidators/storeFile.zod.js";
 
@@ -7,12 +8,18 @@ import { protectedRoute } from "@/modules/auth-basic/middleware/authBasic/jwt.js
 
 import { response } from "@/modules/shared/utils/response.js";
 
-const storeFileController = createStoreFileS3Controller();
+const s3Client = new S3Client();
+const storeFileController = createStoreFileS3Controller(s3Client);
 const router = express.Router();
 
-router.post("/upload", protectedRoute, async (req, res, next) => {
-  await storeFileController
-    .uploadFile(req)
+router.post("/upload/:fileName", protectedRoute, async (req, res, next) => {
+  const { fileName } = req.params;
+
+  await storeFileValidator()
+    .validateGetFile({ fileName })
+    .then((val) =>
+      storeFileController.uploadFile({ req, fileName: val.fileName })
+    )
     .then((result) => res.json(response(result)))
     .catch(next);
 });

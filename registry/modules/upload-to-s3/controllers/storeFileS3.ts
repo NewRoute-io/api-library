@@ -1,5 +1,4 @@
 import { Request } from "express";
-import fs from "fs";
 import formidable from "formidable";
 import { PassThrough } from "stream";
 import {
@@ -14,7 +13,7 @@ import { Upload } from "@aws-sdk/lib-storage";
 import {
   GetFileSchema,
   ListFilesSchema,
-  DeleteFilesSchema
+  DeleteFilesSchema,
 } from "@/schemaValidators/storeFile.interface.js";
 
 import {
@@ -26,7 +25,11 @@ import {
 
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
-type FileLocationsArray = (string | undefined)[];
+interface UploadFile extends GetFileSchema {
+  req: Request;
+}
+
+type UploadedFileLoc = { s3Location: string | undefined };
 type FileOutput = {
   name: string;
   size?: number;
@@ -35,44 +38,40 @@ type FileOutput = {
 type FileListOutput = { files: FileOutput[]; nextToken: string | undefined };
 
 interface StoreFileS3Controller {
-  uploadFile: (req: Request) => Promise<{ s3Locations: FileLocationsArray }>;
+  uploadFile: (props: UploadFile) => Promise<UploadedFileLoc>;
   downloadFile: (props: GetFileSchema) => Promise<GetObjectCommandOutput>;
   getFileList: (props: ListFilesSchema) => Promise<FileListOutput>;
   deleteFiles: (props: DeleteFilesSchema) => void;
-};
+}
 
-export const createStoreFileS3Controller = (): StoreFileS3Controller => {
-  const s3Client = new S3Client();
-
+export const createStoreFileS3Controller = (
+  s3Client: S3Client
+): StoreFileS3Controller => {
   return {
-    uploadFile(req) {
+    uploadFile({ req, fileName }) {
       return new Promise((resolve, reject) => {
-        const fileLocations: FileLocationsArray = [];
-        const form = formidable({ allowEmptyFiles: false });
+        const form = formidable({
+          allowEmptyFiles: false,
+          fileWriteStreamHandler: () => {
+            const passThrough = new PassThrough();
+            const uploadParams = {
+              Bucket: S3_BUCKET_NAME,
+              Key: fileName,
+              Body: passThrough,
+            };
 
-        form.on("fileBegin", (fileName, file) => {
-          const passThrough = new PassThrough();
-          const fileStream = fs.createReadStream(file.filepath);
+            new Upload({ client: s3Client, params: uploadParams })
+              .done()
+              .then((result) => resolve({ s3Location: result.Location }))
+              .catch(() => reject(s3UploadFailed()));
 
-          fileStream.pipe(passThrough);
-
-          const uploadParams = {
-            Bucket: S3_BUCKET_NAME,
-            Key: file.originalFilename || fileName,
-            Body: passThrough,
-            ContentType: file.mimetype || "application/octet-stream",
-          };
-
-          new Upload({ client: s3Client, params: uploadParams })
-            .done()
-            .then((result) => fileLocations.push(result.Location))
-            .catch(() => reject(s3UploadFailed()));
+            return passThrough;
+          },
         });
 
-        form.on("error", (err) => reject(fileUploadFailed(err?.code)));
-        form.on("end", () => resolve({ s3Locations: fileLocations }));
-
         form.parse(req);
+
+        form.on("error", (err) => reject(fileUploadFailed(err?.code)));
       });
     },
 
@@ -110,18 +109,18 @@ export const createStoreFileS3Controller = (): StoreFileS3Controller => {
         }
       });
 
-      return { files: fileNames, nextToken: list.ContinuationToken };
+      return { files: fileNames, nextToken: list.NextContinuationToken };
     },
 
     async deleteFiles({ files }) {
-        const deleteObjectsKeys = files.map((el) => ({ Key: el }));
-        
-        await s3Client.send(
-          new DeleteObjectsCommand({
-            Bucket: S3_BUCKET_NAME,
-            Delete: { Objects: deleteObjectsKeys },
-          })
-        );
+      const deleteObjectsKeys = files.map((el) => ({ Key: el }));
+
+      await s3Client.send(
+        new DeleteObjectsCommand({
+          Bucket: S3_BUCKET_NAME,
+          Delete: { Objects: deleteObjectsKeys },
+        })
+      );
     },
   };
 };
