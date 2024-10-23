@@ -8,7 +8,7 @@ export const createRefreshTokenRepository = (): RefreshTokenRepository => {
       const query: QueryConfig = {
         name: "queryGetRefreshToken",
         text: `
-            SELECT token, token_family, active, expires_at
+            SELECT user_id, token, token_family, active, expires_at
             FROM refresh_tokens 
             WHERE token = $1
               AND expires_at < NOW();
@@ -34,7 +34,7 @@ export const createRefreshTokenRepository = (): RefreshTokenRepository => {
         text: `
             INSERT INTO refresh_tokens (token_family, user_id, expires_at)
             VALUES (COALESCE($1, gen_random_uuid()), $2, $3)
-            RETURNING *;
+            RETURNING user_id, token, token_family, active, expires_at;
         `,
         values: [tokenFamily, userId, expiresAt],
       };
