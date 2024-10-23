@@ -19,6 +19,7 @@ export const createRefreshTokenRepository = (): RefreshTokenRepository => {
 
       if (result) {
         return {
+          userId: result.user_id,
           token: result.token,
           active: result.active,
           tokenFamily: result.token_family,
@@ -40,6 +41,7 @@ export const createRefreshTokenRepository = (): RefreshTokenRepository => {
       const result = await pgPool.query(query).then((data) => data.rows.at(0));
 
       return {
+        userId: result.user_id,
         token: result.token,
         active: result.active,
         tokenFamily: result.token_family,

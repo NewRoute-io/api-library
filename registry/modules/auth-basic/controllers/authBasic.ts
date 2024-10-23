@@ -10,6 +10,7 @@ import {
   usernameNotAvailable,
   invalidLoginCredentials,
 } from "@/modules/auth-basic/utils/errors/auth.js";
+import { forbiddenError } from "@/modules/shared/utils/errors/common.js";
 
 import { UserRepository } from "@/repositories/user.interface.js";
 import { RefreshTokenRepository } from "@/repositories/refreshToken.interface.js";
@@ -57,8 +58,8 @@ export const createAuthBasicController = (
         username,
         hashedPass,
       });
-      
-      const refreshToken = await generateRefreshToken(newUser.userId)
+
+      const refreshToken = await generateRefreshToken(newUser.userId);
       const accessToken = generateAccessToken(newUser.userId);
 
       return { user: newUser, accessToken, refreshToken };
@@ -76,7 +77,7 @@ export const createAuthBasicController = (
       const isOk = await argon.verify(hashedPass, password);
 
       if (isOk) {
-        const refreshToken = await generateRefreshToken(user.userId)
+        const refreshToken = await generateRefreshToken(user.userId);
         const accessToken = generateAccessToken(user.userId);
 
         return { user, accessToken, refreshToken };
@@ -86,10 +87,29 @@ export const createAuthBasicController = (
     },
 
     async refreshToken({ token }: RefreshTokenSchema) {
-      // TODO: Get refresh token -> if expired or not found then return not authorized error
-      // TODO: Check if active = true;
-      //          IF yes -> rotate token; get new access token
-      //          IF not -> token already used; delete all refresh tokens by family ID
+      const tokenData = await refreshTokenRepo.getToken(token);
+
+      if (!tokenData) throw forbiddenError();
+
+      const { userId, tokenFamily, active, expiresAt } = tokenData;
+
+      const now = new Date();
+      const tokenExpiry = new Date(expiresAt);
+
+      if (tokenExpiry < now) throw forbiddenError();
+
+      if (active) {
+        // Token is valid and hasn't been used yet
+        const newRefreshToken = await generateRefreshToken(userId, tokenFamily);
+        const accessToken = generateAccessToken(userId);
+
+        return { accessToken, refreshToken: newRefreshToken };
+      } else {
+        // Previously refreshed token used, invalidate all tokens in family
+        refreshTokenRepo.invalidateTokenFamily(tokenFamily);
+
+        throw forbiddenError();
+      }
     },
   };
 };
