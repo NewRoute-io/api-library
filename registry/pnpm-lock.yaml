@@ -54,9 +54,6 @@ importers:
       '@vitest/coverage-istanbul':
         specifier: 2.1.3
         version: 2.1.3(vitest@2.1.3(@types/node@22.7.5))
-      '@vitest/coverage-v8':
-        specifier: 2.1.3
-        version: 2.1.3(vitest@2.1.3(@types/node@22.7.5))
       aws-sdk-client-mock:
         specifier: ^4.1.0
         version: 4.1.0
@@ -309,9 +306,6 @@ packages:
   '@babel/types@7.25.9':
     resolution: {integrity: sha512-OwS2CM5KocvQ/k7dFJa8i5bNGJP0hXWfVCfDkqRFP1IreH1JDC7wG6eCYCi0+McbfT8OR/kNqsI0UU0xP9H6PQ==}
     engines: {node: '>=6.9.0'}
-
-  '@bcoe/v8-coverage@0.2.3':
-    resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -841,15 +835,6 @@ packages:
     resolution: {integrity: sha512-FByj6ni54EzA4SXl5X3ugSeeBSI6MSEQBbvPefF6x6GCajePLeZSNYt7u0NOKUQbWpQpAdHHstrqR9ALEpnAxA==}
     peerDependencies:
       vitest: 2.1.3
-
-  '@vitest/coverage-v8@2.1.3':
-    resolution: {integrity: sha512-2OJ3c7UPoFSmBZwqD2VEkUw6A/tzPF0LmW0ZZhhB8PFxuc+9IBG/FaSM+RLEenc7ljzFvGN+G0nGQoZnh7sy2A==}
-    peerDependencies:
-      '@vitest/browser': 2.1.3
-      vitest: 2.1.3
-    peerDependenciesMeta:
-      '@vitest/browser':
-        optional: true
 
   '@vitest/expect@2.1.3':
     resolution: {integrity: sha512-SNBoPubeCJhZ48agjXruCI57DvxcsivVDdWz+SSsmjTT4QN/DfHk3zB/xKsJqMs26bLZ/pNRLnCf0j679i0uWQ==}
@@ -2440,8 +2425,6 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
-  '@bcoe/v8-coverage@0.2.3': {}
-
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
 
@@ -3029,24 +3012,6 @@ snapshots:
       istanbul-lib-source-maps: 5.0.6
       istanbul-reports: 3.1.7
       magicast: 0.3.5
-      test-exclude: 7.0.1
-      tinyrainbow: 1.2.0
-      vitest: 2.1.3(@types/node@22.7.5)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitest/coverage-v8@2.1.3(vitest@2.1.3(@types/node@22.7.5))':
-    dependencies:
-      '@ampproject/remapping': 2.3.0
-      '@bcoe/v8-coverage': 0.2.3
-      debug: 4.3.7
-      istanbul-lib-coverage: 3.2.2
-      istanbul-lib-report: 3.0.1
-      istanbul-lib-source-maps: 5.0.6
-      istanbul-reports: 3.1.7
-      magic-string: 0.30.12
-      magicast: 0.3.5
-      std-env: 3.7.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
       vitest: 2.1.3(@types/node@22.7.5)

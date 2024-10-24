@@ -1,5 +1,5 @@
 import z from "zod";
-import { BasicAuthSchema, BasicAuthValidator } from "./auth-basic.interface.js";
+import { BasicAuthValidator } from "./auth-basic.interface.js";
 
 const basicAuthSchema = z.object({
   username: z.string(),
@@ -11,10 +11,18 @@ const basicAuthSchema = z.object({
     .regex(/\d/, "Password must contain at least one number"),
 });
 
+const refreshTokenSchema = z.object({
+  token: z.string().uuid(),
+});
+
 export const basicAuthValidator = (): BasicAuthValidator => {
   return {
-    async validate(payload): Promise<BasicAuthSchema> {
+    async validateAuth(payload) {
       return await basicAuthSchema.parseAsync(payload);
+    },
+
+    async validateRefreshToken(payload) {
+      return await refreshTokenSchema.parseAsync(payload);
     },
   };
 };

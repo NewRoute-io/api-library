@@ -1,25 +1,53 @@
 import argon from "argon2";
 
-import { BasicAuthSchema } from "@/schemaValidators/auth-basic.interface.js";
+import {
+  BasicAuthSchema,
+  RefreshTokenSchema,
+} from "@/schemaValidators/auth-basic.interface.js";
 
 import { accessTokenManager } from "@/modules/auth-basic/utils/jwt/tokenManager.js";
 import {
   usernameNotAvailable,
   invalidLoginCredentials,
 } from "@/modules/auth-basic/utils/errors/auth.js";
+import { forbiddenError } from "@/modules/shared/utils/errors/common.js";
 
 import { User, UserRepository } from "@/repositories/user.interface.js";
+import {
+  RefreshToken,
+  RefreshTokenRepository,
+} from "@/repositories/refreshToken.interface.js";
+
+interface TokensOutput { accessToken: string; refreshToken: RefreshToken };
+interface AuthOutput extends TokensOutput  {user: User}
 
 interface AuthBasicController {
-  login: (props: BasicAuthSchema) => Promise<{user: User, accessToken: string}>
-  signup: (props: BasicAuthSchema) => Promise<{user: User, accessToken: string}>
+  login: (props: BasicAuthSchema) => Promise<AuthOutput>
+  signup: (props: BasicAuthSchema) => Promise<AuthOutput>
+  refreshToken: (props:RefreshTokenSchema) => Promise<TokensOutput>
 }
 
-export const createAuthBasicController = (userRepo: UserRepository): AuthBasicController => {
+export const createAuthBasicController = (
+  userRepo: UserRepository,
+  refreshTokenRepo: RefreshTokenRepository
+): AuthBasicController => {
   const generateAccessToken = (userId: string) => {
     const signedJWT = accessTokenManager.sign({ userId });
 
     return signedJWT;
+  };
+
+  const generateRefreshToken = async (userId: string, tokenFamily?: string) => {
+    const expAt = new Date(new Date().getTime() + 31 * 24 * 60 * 6000); // Expire in 31 days
+    const refreshTokenExp = expAt.toISOString();
+
+    const token = await refreshTokenRepo.createToken({
+      userId,
+      tokenFamily,
+      expiresAt: refreshTokenExp,
+    });
+
+    return token;
   };
 
   return {
@@ -37,10 +65,15 @@ export const createAuthBasicController = (userRepo: UserRepository): AuthBasicCo
         memoryCost: 19456, // 19 MiB
       });
 
-      const newUser = await userRepo.createAuthBasicUser({ username, hashedPass });
+      const newUser = await userRepo.createAuthBasicUser({
+        username,
+        hashedPass,
+      });
+
+      const refreshToken = await generateRefreshToken(newUser.userId);
       const accessToken = generateAccessToken(newUser.userId);
 
-      return { user: newUser, accessToken };
+      return { user: newUser, accessToken, refreshToken };
     },
     
     async login(props) {
@@ -55,12 +88,34 @@ export const createAuthBasicController = (userRepo: UserRepository): AuthBasicCo
       const isOk = await argon.verify(hashedPass, password);
 
       if (isOk) {
+        const refreshToken = await generateRefreshToken(user.userId);
         const accessToken = generateAccessToken(user.userId);
 
-        return { user, accessToken };
+        return { user, accessToken, refreshToken };
       }
 
       throw invalidLoginCredentials();
+    },
+
+    async refreshToken({ token }: RefreshTokenSchema) {
+      const tokenData = await refreshTokenRepo.getToken(token);
+
+      if (!tokenData) throw forbiddenError();
+
+      const { userId, tokenFamily, active } = tokenData;
+
+      if (active) {
+        // Token is valid and hasn't been used yet
+        const newRefreshToken = await generateRefreshToken(userId, tokenFamily);
+        const accessToken = generateAccessToken(userId);
+
+        return { accessToken, refreshToken: newRefreshToken };
+      } else {
+        // Previously refreshed token used, invalidate all tokens in family
+        refreshTokenRepo.invalidateTokenFamily(tokenFamily);
+
+        throw forbiddenError();
+      }
     },
   };
 };
