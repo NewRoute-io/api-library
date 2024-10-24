@@ -12,13 +12,25 @@ import {
 } from "@/modules/auth-basic/utils/errors/auth.js";
 import { forbiddenError } from "@/modules/shared/utils/errors/common.js";
 
-import { UserRepository } from "@/repositories/user.interface.js";
-import { RefreshTokenRepository } from "@/repositories/refreshToken.interface.js";
+import { User, UserRepository } from "@/repositories/user.interface.js";
+import {
+  RefreshToken,
+  RefreshTokenRepository,
+} from "@/repositories/refreshToken.interface.js";
+
+interface TokensOutput { accessToken: string; refreshToken: RefreshToken };
+interface AuthOutput extends TokensOutput  {user: User}
+
+interface AuthBasicController {
+  login: (props: BasicAuthSchema) => Promise<AuthOutput>
+  signup: (props: BasicAuthSchema) => Promise<AuthOutput>
+  refreshToken: (props:RefreshTokenSchema) => Promise<TokensOutput>
+}
 
 export const createAuthBasicController = (
   userRepo: UserRepository,
   refreshTokenRepo: RefreshTokenRepository
-) => {
+): AuthBasicController => {
   const generateAccessToken = (userId: string) => {
     const signedJWT = accessTokenManager.sign({ userId });
 
@@ -39,7 +51,7 @@ export const createAuthBasicController = (
   };
 
   return {
-    async signup(props: BasicAuthSchema) {
+    async signup(props) {
       const { username, password } = props;
 
       await userRepo.getUser(username).then((res) => {
@@ -63,8 +75,8 @@ export const createAuthBasicController = (
 
       return { user: newUser, accessToken, refreshToken };
     },
-
-    async login(props: BasicAuthSchema) {
+    
+    async login(props) {
       const { username, password } = props;
 
       const user = await userRepo.getUser(username).then((res) => {

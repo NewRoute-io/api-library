@@ -1,5 +1,5 @@
 import yup from "yup";
-import { BasicAuthSchema, BasicAuthValidator } from "./auth-basic.interface.js";
+import { BasicAuthValidator } from "./auth-basic.interface.js";
 
 const basicAuthSchema = yup.object({
   username: yup.string().required(),
@@ -18,7 +18,7 @@ const refreshTokenSchema = yup.object({
 
 export const basicAuthValidator = (): BasicAuthValidator => {
   return {
-    async validateAuth(payload: BasicAuthSchema): Promise<BasicAuthSchema> {
+    async validateAuth(payload) {
       return await basicAuthSchema.noUnknown().strict(true).validate(payload);
     },
 
