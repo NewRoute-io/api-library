@@ -1,14 +1,10 @@
 import { QueryConfig } from "pg";
 import { pgPool } from "@/repositories/connection.postgres.js";
-import {
-  UserRepository,
-  User,
-  AuthBasicSignup,
-} from "@/repositories/user.interface.js";
+import { UserRepository } from "@/repositories/user.interface.js";
 
 export const createUserRepository = (): UserRepository => {
   return {
-    async getUser(username: string): Promise<User | null> {
+    async getUser(username) {
       const query: QueryConfig = {
         name: "queryGetUserByUsername",
         text: `
@@ -18,11 +14,19 @@ export const createUserRepository = (): UserRepository => {
         `,
         values: [username],
       };
-      const result = await pgPool.query<User>(query);
-      return result.rows.at(0) || null;
+      const result = await pgPool.query(query).then((data) => data.rows.at(0));
+
+      if (result) {
+        return {
+          userId: result.id,
+          username: result.username,
+          password: result.password,
+          createdAt: result.created_at,
+        };
+      } else return null;
     },
 
-    async getUserById(userId: string): Promise<User | null> {
+    async getUserById(userId) {
       const query: QueryConfig = {
         name: "queryGetUserById",
         text: `
@@ -32,11 +36,19 @@ export const createUserRepository = (): UserRepository => {
         `,
         values: [userId],
       };
-      const result = await pgPool.query<User>(query);
-      return result.rows.at(0) || null;
+      const result = await pgPool.query(query).then((data) => data.rows.at(0));
+
+      if (result) {
+        return {
+          userId: result.id,
+          username: result.username,
+          password: result.password,
+          createdAt: result.created_at,
+        };
+      } else return null;
     },
 
-    async createAuthBasicUser(data: AuthBasicSignup): Promise<User> {
+    async createAuthBasicUser(data) {
       const query: QueryConfig = {
         name: "queryCreateAuthBasicUser",
         text: `
@@ -46,8 +58,14 @@ export const createUserRepository = (): UserRepository => {
         `,
         values: [data.username, data.hashedPass],
       };
-      const result = await pgPool.query<User>(query);
-      return result.rows[0];
+      const result = await pgPool.query(query).then((data) => data.rows.at(0));
+
+      return {
+        userId: result.id,
+        username: result.username,
+        password: result.password,
+        createdAt: result.created_at,
+      };
     },
   };
 };

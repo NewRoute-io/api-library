@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
@@ -7,14 +7,21 @@ export default defineConfig({
     environment: "node",
     watch: true,
     coverage: {
-      provider: "v8",
+      provider: "istanbul",
       reportsDirectory: "./coverage",
       reporter: ["text", "json", "html"],
-      all: true,
+      exclude: [
+        ...configDefaults.coverage.exclude || [],
+        "repositories/*",
+        "schemaValidators/*",
+        "./**/router/*",
+        "**/errors/*"
+      ],
     },
     env: {
       JWT_SECRET_KEY: "testSecretKey",
       JWT_ISSUER: "api.library.tests",
+      S3_BUCKET_NAME: "mockBucketName",
     },
     alias: {
       "@/": new URL("./", import.meta.url).pathname,

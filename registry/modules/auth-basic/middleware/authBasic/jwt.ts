@@ -14,7 +14,7 @@ const userRepository = createUserRepository();
  *
  * @see {scheme} To define a custom Authorization header JWT scheme
  */
-export const protectedRoute = (): RequestHandler => async (req, _, next) => {
+export const protectedRoute: RequestHandler = async (req, _, next) => {
   const authHeader = req.header("authorization");
 
   if (!authHeader) {
