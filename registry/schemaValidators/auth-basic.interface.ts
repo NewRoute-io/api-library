@@ -1,6 +1,7 @@
 export type BasicAuthSchema = {
   username: string;
   password: string;
+  email?: string;
 };
 
 export type RefreshTokenSchema = {

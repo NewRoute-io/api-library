@@ -10,6 +10,7 @@ const basicAuthSchema = yup.object({
     .matches(/[a-z]/, "Password must contain at least one lowercase letter")
     .matches(/\d/, "Password must contain at least one number")
     .required(),
+  email: yup.string().email()
 });
 
 const refreshTokenSchema = yup.object({

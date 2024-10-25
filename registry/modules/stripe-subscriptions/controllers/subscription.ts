@@ -6,7 +6,10 @@ import {
   CancelUserSubSchema,
   UpdateUserSubSchema,
 } from "@/schemaValidators/subscription.interface.js";
+
 import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
+import {UserRepository} from "@/repositories/user.interface.js"
+
 import { subscriptionNotFound } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
 
 const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
@@ -53,11 +56,13 @@ interface SubscriptionController {
   updateUserSub: (props: UpdateUserSubSchema) => Promise<UserSubsOutput>;
 
   cancelUserSub: (props: CancelUserSubSchema) => void;
+
   stopUserSubCancellation: (props: CancelUserSubSchema) => void;
 }
 
 export const createSubscriptionController = (
-  userSubRepository: UserSubscriptionRepository
+  userSubRepository: UserSubscriptionRepository,
+  userRepository: UserRepository
 ): SubscriptionController => {
   return {
     async getSubscriptions() {
@@ -152,9 +157,8 @@ export const createSubscriptionController = (
         customerData = { customer: userSubscription.customerId };
       } else {
         // First time paying user, create Stripe Customer after Checkout with email
-
-        // TODO: Update user DB to have an email in Auth Basic
-        customerData = { customer_email: "" };
+        const user = await userRepository.getUserById(userId);
+        customerData = { customer_email: user?.email };
       }
 
       const checkout = await stripe.checkout.sessions.create({

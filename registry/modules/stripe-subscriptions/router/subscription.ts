@@ -6,6 +6,7 @@ import { createSubscriptionController } from "@/modules/stripe-subscriptions/con
 import { createSubscriptionsWHController } from "@/modules/stripe-subscriptions/controllers/subscriptionWebhook.js";
 
 import { createUserSubRepository } from "@/repositories/subscription.postgres.js";
+import { createUserRepository } from "@/repositories/user.postgres.js";
 
 import { validateStripeSignature } from "@/modules/stripe-subscriptions/middleware/subscriptions/stripeSignature.js";
 
@@ -14,8 +15,10 @@ import { response } from "@/modules/shared/utils/response.js";
 
 const router = express.Router();
 
+const userRepository = createUserRepository()
 const userSubRepository = createUserSubRepository();
-const subscriptionController = createSubscriptionController(userSubRepository);
+
+const subscriptionController = createSubscriptionController(userSubRepository, userRepository);
 const subscriptionWHController = createSubscriptionsWHController(userSubRepository);
 
 router.get("/", async (_, res, next) => {

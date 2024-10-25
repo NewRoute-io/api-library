@@ -52,7 +52,7 @@ export const createAuthBasicController = (
 
   return {
     async signup(props) {
-      const { username, password } = props;
+      const { username, password, email } = props;
 
       await userRepo.getUser(username).then((res) => {
         if (res !== null) throw usernameNotAvailable();
@@ -68,6 +68,7 @@ export const createAuthBasicController = (
       const newUser = await userRepo.createAuthBasicUser({
         username,
         hashedPass,
+        email,
       });
 
       const refreshToken = await generateRefreshToken(newUser.userId);
