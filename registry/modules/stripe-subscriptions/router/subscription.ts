@@ -1,8 +1,13 @@
 import express from "express";
 
 import { subscriptionValidator } from "@/schemaValidators/subscription.zod.js";
-import { createSubscriptionController } from "../controllers/subscription.js";
+
+import { createSubscriptionController } from "@/modules/stripe-subscriptions/controllers/subscription.js";
+import { createSubscriptionsWHController } from "@/modules/stripe-subscriptions/controllers/subscriptionWebhook.js";
+
 import { createUserSubRepository } from "@/repositories/subscription.postgres.js";
+
+import { validateStripeSignature } from "@/modules/stripe-subscriptions/middleware/subscriptions/stripeSignature.js";
 
 import { protectedRoute } from "@/modules/auth-basic/middleware/authBasic/jwt.js";
 import { response } from "@/modules/shared/utils/response.js";
@@ -11,6 +16,7 @@ const router = express.Router();
 
 const userSubRepository = createUserSubRepository();
 const subscriptionController = createSubscriptionController(userSubRepository);
+const subscriptionWHController = createSubscriptionsWHController(userSubRepository);
 
 router.get("/", async (_, res, next) => {
   await subscriptionController
@@ -92,6 +98,16 @@ router.get("/checkout/:priceId", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-// TODO: Stripe Webhooks
+router.post("webhook", validateStripeSignature, async (req, res, next) => {
+  try {
+    const eventPayload = req.stripeEvent!;
+
+    subscriptionWHController.handleWebhook(eventPayload);
+
+    res.json({ received: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export { router };

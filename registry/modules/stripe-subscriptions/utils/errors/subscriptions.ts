@@ -7,3 +7,19 @@ export const subscriptionNotFound = (subscriptionId: string) => {
     404
   );
 };
+
+export const stripeWebhookValidationError = (error?: Error) => {
+  return new HttpError(
+    "StripeWebhookValidationError",
+    `Webhook error: ${error?.message}`,
+    404
+  );
+};
+
+export const stripeWebhookEventNotSupported = (event: string) => {
+  return new HttpError(
+    "StripeWebhookEventNotSupported",
+    `Webhook event not supported: ${event}`,
+    400
+  );
+};

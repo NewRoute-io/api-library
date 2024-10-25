@@ -15,14 +15,15 @@ const CHECKOUT_CANCEL_URL = process.env.CHECKOUT_CANCEL_URL;
 
 const stripe = new Stripe(STRIPE_API_KEY);
 
-// TODO: Store tiered pricing
+// TODO: Usage-based pricing
 type SubscriptionPrices = {
   currency: string;
   amount: number | null;
 };
 
+// TODO: Per seat pricing (using quantities?)
 type Subscription = {
-  key: string;
+  plan: string;
   priceId: string;
   name: string;
   description: string | null;
@@ -38,7 +39,7 @@ type UserSubsOutput = {
   createdAt: string;
 };
 
-interface SubscriptionsController {
+interface SubscriptionController {
   getSubscriptions: () => Promise<Subscription[]>;
 
   getUserSubs: (
@@ -57,7 +58,7 @@ interface SubscriptionsController {
 
 export const createSubscriptionController = (
   userSubRepository: UserSubscriptionRepository
-): SubscriptionsController => {
+): SubscriptionController => {
   return {
     async getSubscriptions() {
       const stripePrices = await stripe.prices.list({
@@ -72,14 +73,14 @@ export const createSubscriptionController = (
         const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
         const { name, description, marketing_features } = product;
 
-        const key = price.lookup_key || name.toLowerCase().replaceAll(" ", "_");
+        const planKey = price.lookup_key || name.toLowerCase().replaceAll(" ", "_");
 
         const productFeatures = marketing_features
           .filter((el) => el.name !== undefined)
           .map((el) => el.name!);
 
         subscriptions.push({
-          key,
+          plan: planKey,
           name,
           description,
           priceId: price.id,
@@ -118,7 +119,7 @@ export const createSubscriptionController = (
           const price = stripeSub.items.data[0].price;
           const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
 
-          const plan =
+          const planKey =
             price.lookup_key || product.name.toLowerCase().replaceAll(" ", "_");
 
           // Upsert DB with Stripe subscription data
@@ -126,11 +127,11 @@ export const createSubscriptionController = (
             userId,
             customerId: stripeSub.customer as string,
             subscriptionId: stripeSub.id,
-            plan,
+            plan: planKey,
           });
 
           userSubscriptions.push({
-            plan,
+            plan: planKey,
             subscriptionId: stripeSub.id,
             createdAt: userSub.createdAt,
           });
@@ -185,19 +186,19 @@ export const createSubscriptionController = (
         );
 
         const product = newSubscription.price.product as Stripe.Product; // We can assert the type as we expand the product object
-        const newPlan =
+        const newPlanKey =
           newSubscription.price.lookup_key ||
           product.name.toLowerCase().replaceAll(" ", "_");
 
         const newUserSub = await userSubRepository.createUserSubscription({
           userId,
           subscriptionId: newSubscription.subscription,
-          plan: newPlan,
+          plan: newPlanKey,
           customerId: subscription.customer as string,
         });
 
         return {
-          plan: newPlan,
+          plan: newPlanKey,
           subscriptionId: newUserSub.subscriptionId,
           createdAt: newUserSub.createdAt,
         };
