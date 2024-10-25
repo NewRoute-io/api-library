@@ -1,10 +1,5 @@
 import z from "zod";
-import {
-  GetFileSchema,
-  ListFilesSchema,
-  StoreFileValidator,
-  DeleteFilesSchema,
-} from "./storeFile.interface.js";
+import { StoreFileValidator } from "./storeFile.interface.js";
 
 const getFileSchema = z.object({
   fileName: z.string(),
@@ -20,15 +15,15 @@ const deleteFilesSchema = z.object({
 
 export const storeFileValidator = (): StoreFileValidator => {
   return {
-    async validateGetFile(payload): Promise<GetFileSchema> {
+    async validateGetFile(payload) {
       return await getFileSchema.parseAsync(payload);
     },
 
-    async validateListFiles(payload): Promise<ListFilesSchema> {
+    async validateListFiles(payload) {
       return await listFilesSchema.parseAsync(payload);
     },
 
-    async validateDeleteFiles(payload): Promise<DeleteFilesSchema> {
+    async validateDeleteFiles(payload) {
       return await deleteFilesSchema.parseAsync(payload);
     },
   };

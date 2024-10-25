@@ -13,7 +13,7 @@ import { UserSubscriptionRepository } from "@/repositories/subscription.interfac
 
 import { notImplementedError } from "@/modules/shared/utils/errors/common.js";
 
-export const createRefreshTokenRepository = (): UserSubscriptionRepository => {
+export const createUserSubRepository = (): UserSubscriptionRepository => {
   return {
     async getUserSubscriptions(userId) {
       // REPLACE: Implement subscription retrieval with your DB of choice

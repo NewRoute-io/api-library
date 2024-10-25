@@ -1,10 +1,5 @@
 import yup from "yup";
-import {
-  GetFileSchema,
-  ListFilesSchema,
-  StoreFileValidator,
-  DeleteFilesSchema,
-} from "./storeFile.interface.js";
+import { StoreFileValidator } from "./storeFile.interface.js";
 
 const getFileSchema = yup.object({
   fileName: yup.string().required(),
@@ -20,15 +15,15 @@ const deleteFilesSchema = yup.object({
 
 export const storeFileValidator = (): StoreFileValidator => {
   return {
-    async validateGetFile(payload): Promise<GetFileSchema> {
+    async validateGetFile(payload) {
       return await getFileSchema.noUnknown().strict(true).validate(payload);
     },
 
-    async validateListFiles(payload): Promise<ListFilesSchema> {
+    async validateListFiles(payload) {
       return await listFilesSchema.noUnknown().strict(true).validate(payload);
     },
 
-    async validateDeleteFiles(payload): Promise<DeleteFilesSchema> {
+    async validateDeleteFiles(payload) {
       return await deleteFilesSchema.noUnknown().strict(true).validate(payload);
     },
   };

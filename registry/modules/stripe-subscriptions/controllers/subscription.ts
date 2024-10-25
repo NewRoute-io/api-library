@@ -1,12 +1,21 @@
 import Stripe from "stripe";
 
+import {
+  GetUserSubsSchema,
+  CreateSubCheckoutSchema,
+  CancelUserSubSchema,
+  UpdateUserSubSchema,
+} from "@/schemaValidators/subscription.interface.js";
 import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
+import { subscriptionNotFound } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
 
 const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
+const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL;
+const CHECKOUT_CANCEL_URL = process.env.CHECKOUT_CANCEL_URL;
 
 const stripe = new Stripe(STRIPE_API_KEY);
 
-// TODO: Get tiered pricing
+// TODO: Store tiered pricing
 type SubscriptionPrices = {
   currency: string;
   amount: number | null;
@@ -30,64 +39,69 @@ type UserSubsOutput = {
 };
 
 interface SubscriptionsController {
-  getSubTypes: () => Promise<Subscription[]>;
-  getUserSubscriptions: (
-    userId: string
-  ) => Promise<{ subscriptions: UserSubsOutput[] }>;
-  createSubCheckout: (priceId: string) => void;
-  updateSub: () => void;
-  deleteSub: () => void;
+  getSubscriptions: () => Promise<Subscription[]>;
+
+  getUserSubs: (
+    props: GetUserSubsSchema
+  ) => Promise<{ userSubscriptions: UserSubsOutput[] }>;
+
+  createSubCheckout: (
+    props: CreateSubCheckoutSchema
+  ) => Promise<{ url: string }>;
+
+  updateUserSub: (props: UpdateUserSubSchema) => Promise<UserSubsOutput>;
+
+  cancelUserSub: (props: CancelUserSubSchema) => void;
+  stopUserSubCancellation: (props: CancelUserSubSchema) => void;
 }
 
 export const createSubscriptionController = (
   userSubRepository: UserSubscriptionRepository
 ): SubscriptionsController => {
   return {
-    async getSubTypes() {
-      const stripePrices = await stripe.prices
-        .list({
-          active: true,
-          type: "recurring",
-          expand: ["data.product"],
-        })
-        .then((res) => res.data);
+    async getSubscriptions() {
+      const stripePrices = await stripe.prices.list({
+        active: true,
+        type: "recurring",
+        expand: ["data.product"],
+      });
 
-      const subscriptionOptions: Subscription[] = [];
+      const subscriptions: Subscription[] = [];
 
-      stripePrices.forEach((el) => {
-        const product = el.product as Stripe.Product; // We can assert the type as we expand the product object
+      stripePrices.data.forEach((price) => {
+        const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
         const { name, description, marketing_features } = product;
 
-        const key = el.lookup_key || name.toLowerCase().replaceAll(" ", "_");
+        const key = price.lookup_key || name.toLowerCase().replaceAll(" ", "_");
 
         const productFeatures = marketing_features
           .filter((el) => el.name !== undefined)
           .map((el) => el.name!);
 
-        subscriptionOptions.push({
+        subscriptions.push({
           key,
           name,
           description,
-          priceId: el.id,
-          interval: el.recurring!.interval,
-          priceType: el.billing_scheme,
+          priceId: price.id,
+          interval: price.recurring!.interval,
+          priceType: price.billing_scheme,
           price: {
-            currency: el.currency,
-            amount: el.unit_amount,
+            currency: price.currency,
+            amount: price.unit_amount,
           },
           features: productFeatures,
         });
       });
 
-      return subscriptionOptions;
+      return subscriptions;
     },
 
-    async getUserSubscriptions(userId) {
+    async getUserSubs({ userId }) {
       const userSubs = await userSubRepository.getUserSubscriptions(userId);
-      let subscriptions: UserSubsOutput[] = [];
+      let userSubscriptions: UserSubsOutput[] = [];
 
       if (userSubs.length > 0) {
-        subscriptions = userSubs.map((el) => ({
+        userSubscriptions = userSubs.map((el) => ({
           plan: el.plan,
           subscriptionId: el.subscriptionId,
           createdAt: el.createdAt,
@@ -99,45 +113,121 @@ export const createSubscriptionController = (
           expand: ["data.items.data.price.product"],
         });
 
-        if (stripeRes.data.length > 0) {
+        for (const stripeSub of stripeRes.data) {
           // Stripe has active subscriptions for that userId
-          for (const stripeSub of stripeRes.data) {
-            const price = stripeSub.items.data[0].price;
-            const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
+          const price = stripeSub.items.data[0].price;
+          const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
 
-            const key =
-              price.lookup_key ||
-              product.name.toLowerCase().replaceAll(" ", "_");
+          const plan =
+            price.lookup_key || product.name.toLowerCase().replaceAll(" ", "_");
 
-            // Upsert DB with Stripe subscription data
-            const userSub = await userSubRepository.createUserSubscription({
-              userId,
-              customerId: stripeSub.customer as string,
-              subscriptionId: stripeSub.id,
-              plan: key,
-            });
+          // Upsert DB with Stripe subscription data
+          const userSub = await userSubRepository.createUserSubscription({
+            userId,
+            customerId: stripeSub.customer as string,
+            subscriptionId: stripeSub.id,
+            plan,
+          });
 
-            subscriptions.push({
-              plan: key,
-              subscriptionId: stripeSub.id,
-              createdAt: userSub.createdAt,
-            });
-          }
+          userSubscriptions.push({
+            plan,
+            subscriptionId: stripeSub.id,
+            createdAt: userSub.createdAt,
+          });
         }
       }
 
-      return { subscriptions };
+      return { userSubscriptions };
     },
 
-    async createSubCheckout(priceId) {
-      // Get user Customer ID from DB
-      // Get success/return URLs
-      // If exists -> create Subscription Checkout with priceId
-      // If none   -> create Subscription Checkout with email (pass from user object) TODO: Update user DB to have an email in Auth Basic
+    async createSubCheckout({ userId, priceId }) {
+      const userSubscription = await userSubRepository
+        .getUserSubscriptions(userId)
+        .then((res) => res.at(0));
+
+      let customerData;
+      if (userSubscription) {
+        // Returning paying user, reuse existing Stripe Customer
+        customerData = { customer: userSubscription.customerId };
+      } else {
+        // First time paying user, create Stripe Customer after Checkout with email
+
+        // TODO: Update user DB to have an email in Auth Basic
+        customerData = { customer_email: "" };
+      }
+
+      const checkout = await stripe.checkout.sessions.create({
+        ...customerData,
+        client_reference_id: userId,
+        customer_creation: "always",
+        line_items: [{ quantity: 1, price: priceId }],
+        subscription_data: { metadata: { userId } },
+        saved_payment_method_options: { payment_method_save: "enabled" },
+        success_url: CHECKOUT_SUCCESS_URL,
+        cancel_url: CHECKOUT_CANCEL_URL,
+        mode: "subscription",
+      });
+
+      return { url: checkout.url! };
     },
 
-    async updateSub() {},
+    async updateUserSub(props) {
+      const { userId, subscriptionId, newPriceId } = props;
 
-    async deleteSub() {},
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+      if (subscription.metadata.userId === userId) {
+        const subscriptionItem = subscription.items.data[0];
+
+        const newSubscription = await stripe.subscriptionItems.update(
+          subscriptionItem.id,
+          { price: newPriceId, expand: ["price.product"] }
+        );
+
+        const product = newSubscription.price.product as Stripe.Product; // We can assert the type as we expand the product object
+        const newPlan =
+          newSubscription.price.lookup_key ||
+          product.name.toLowerCase().replaceAll(" ", "_");
+
+        const newUserSub = await userSubRepository.createUserSubscription({
+          userId,
+          subscriptionId: newSubscription.subscription,
+          plan: newPlan,
+          customerId: subscription.customer as string,
+        });
+
+        return {
+          plan: newPlan,
+          subscriptionId: newUserSub.subscriptionId,
+          createdAt: newUserSub.createdAt,
+        };
+      } else {
+        throw subscriptionNotFound(subscriptionId);
+      }
+    },
+
+    async cancelUserSub({ userId, subscriptionId }) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+      if (subscription.metadata.userId === userId) {
+        await stripe.subscriptions.update(subscriptionId, {
+          cancel_at_period_end: true,
+        });
+      } else {
+        throw subscriptionNotFound(subscriptionId);
+      }
+    },
+
+    async stopUserSubCancellation({ userId, subscriptionId }) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+      if (subscription.metadata.userId === userId) {
+        await stripe.subscriptions.update(subscriptionId, {
+          cancel_at_period_end: false,
+        });
+      } else {
+        throw subscriptionNotFound(subscriptionId);
+      }
+    },
   };
 };

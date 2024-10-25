@@ -5,7 +5,7 @@ import {
   UserSubscription,
 } from "@/repositories/subscription.interface.js";
 
-export const createRefreshTokenRepository = (): UserSubscriptionRepository => {
+export const createUserSubRepository = (): UserSubscriptionRepository => {
   return {
     async getUserSubscriptions(userId) {
       const query: QueryConfig = {
