@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 
+import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
+
 const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
 
 const stripe = new Stripe(STRIPE_API_KEY);
@@ -21,15 +23,25 @@ type Subscription = {
   features?: string[];
 };
 
+type UserSubsOutput = {
+  plan: string;
+  subscriptionId: string;
+  createdAt: string;
+};
+
 interface SubscriptionsController {
   getSubTypes: () => Promise<Subscription[]>;
-  getUserSubscription: (userId: string) => void;
-  createSubCheckout: () => void;
+  getUserSubscriptions: (
+    userId: string
+  ) => Promise<{ subscriptions: UserSubsOutput[] }>;
+  createSubCheckout: (priceId: string) => void;
   updateSub: () => void;
   deleteSub: () => void;
 }
 
-export const createSubscriptionController = (): SubscriptionsController => {
+export const createSubscriptionController = (
+  userSubRepository: UserSubscriptionRepository
+): SubscriptionsController => {
   return {
     async getSubTypes() {
       const stripePrices = await stripe.prices
@@ -70,9 +82,59 @@ export const createSubscriptionController = (): SubscriptionsController => {
       return subscriptionOptions;
     },
 
-    async getUserSubscription(userId) {},
+    async getUserSubscriptions(userId) {
+      const userSubs = await userSubRepository.getUserSubscriptions(userId);
+      let subscriptions: UserSubsOutput[] = [];
 
-    async createSubCheckout() {},
+      if (userSubs.length > 0) {
+        subscriptions = userSubs.map((el) => ({
+          plan: el.plan,
+          subscriptionId: el.subscriptionId,
+          createdAt: el.createdAt,
+        }));
+      } else {
+        // No stored subscription data found -> Check with Stripe
+        const stripeRes = await stripe.subscriptions.search({
+          query: `status:'active' metadata['userId']:${userId}`,
+          expand: ["data.items.data.price.product"],
+        });
+
+        if (stripeRes.data.length > 0) {
+          // Stripe has active subscriptions for that userId
+          for (const stripeSub of stripeRes.data) {
+            const price = stripeSub.items.data[0].price;
+            const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
+
+            const key =
+              price.lookup_key ||
+              product.name.toLowerCase().replaceAll(" ", "_");
+
+            // Upsert DB with Stripe subscription data
+            const userSub = await userSubRepository.createUserSubscription({
+              userId,
+              customerId: stripeSub.customer as string,
+              subscriptionId: stripeSub.id,
+              plan: key,
+            });
+
+            subscriptions.push({
+              plan: key,
+              subscriptionId: stripeSub.id,
+              createdAt: userSub.createdAt,
+            });
+          }
+        }
+      }
+
+      return { subscriptions };
+    },
+
+    async createSubCheckout(priceId) {
+      // Get user Customer ID from DB
+      // Get success/return URLs
+      // If exists -> create Subscription Checkout with priceId
+      // If none   -> create Subscription Checkout with email (pass from user object) TODO: Update user DB to have an email in Auth Basic
+    },
 
     async updateSub() {},
 
