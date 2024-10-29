@@ -6,9 +6,13 @@ import {
   DeleteFilesSchema,
 } from "./storeFile.interface.js";
 
+const fileNameSchema = yup
+  .string()
+  .matches(/^[a-zA-Z0-9._-]{1,255}$/, "Invalid file name");
+
 const getFileSchema = yup.object({
   userId: yup.number().required(),
-  fileName: yup.string().required(),
+  fileName: fileNameSchema.required(),
 });
 
 const listFilesSchema = yup.object({
@@ -18,7 +22,7 @@ const listFilesSchema = yup.object({
 
 const deleteFilesSchema = yup.object({
   userId: yup.number().required(),
-  files: yup.array(yup.string().required()).required(),
+  files: yup.array(fileNameSchema.required()).required(),
 });
 
 export const storeFileValidator = (): StoreFileValidator => {

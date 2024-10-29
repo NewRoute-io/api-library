@@ -6,9 +6,13 @@ import {
   DeleteFilesSchema,
 } from "./storeFile.interface.js";
 
+const fileNameSchema = z
+  .string()
+  .regex(/^[a-zA-Z0-9._-]{1,255}$/, "Invalid file name");
+
 const getFileSchema = z.object({
   userId: z.number(),
-  fileName: z.string(),
+  fileName: fileNameSchema,
 });
 
 const listFilesSchema = z.object({
@@ -18,7 +22,7 @@ const listFilesSchema = z.object({
 
 const deleteFilesSchema = z.object({
   userId: z.number(),
-  files: z.array(z.string()),
+  files: z.array(fileNameSchema),
 });
 
 export const storeFileValidator = (): StoreFileValidator => {
