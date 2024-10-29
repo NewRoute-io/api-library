@@ -7,6 +7,7 @@ import {
   S3Client,
   ListObjectsV2Command,
   DeleteObjectsCommand,
+  S3ServiceException,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
@@ -17,9 +18,10 @@ import {
 } from "@/schemaValidators/storeFile.interface.js";
 
 import {
-  fileUploadFailed,
+  fileParseError,
   s3UploadFailed,
   errorDownloadingS3File,
+  s3FileNotFound,
   cantGetS3Files,
 } from "@/modules/upload-to-s3/utils/errors/storeFileS3.js";
 
@@ -47,8 +49,13 @@ interface StoreFileS3Controller {
 export const createStoreFileS3Controller = (
   s3Client: S3Client
 ): StoreFileS3Controller => {
+
+  const generateFileName = (userId: string, name: string) => {
+    return `owner:${userId}_name:${name}`;
+  };
+
   return {
-    uploadFile({ req, fileName }) {
+    uploadFile({ req, fileName, userId }) {
       return new Promise((resolve, reject) => {
         const form = formidable({
           allowEmptyFiles: false,
@@ -56,7 +63,7 @@ export const createStoreFileS3Controller = (
             const passThrough = new PassThrough();
             const uploadParams = {
               Bucket: S3_BUCKET_NAME,
-              Key: fileName,
+              Key: generateFileName(userId, fileName),
               Body: passThrough,
             };
 
@@ -71,15 +78,24 @@ export const createStoreFileS3Controller = (
 
         form.parse(req);
 
-        form.on("error", (err) => reject(fileUploadFailed(err?.code)));
+        form.on("error", (err) => reject(fileParseError(err?.code)));
       });
     },
 
-    async downloadFile({ fileName }) {
+    async downloadFile({ fileName, userId }) {
       const data = await s3Client
-        .send(new GetObjectCommand({ Bucket: S3_BUCKET_NAME, Key: fileName }))
-        .catch(() => {
-          throw errorDownloadingS3File(fileName);
+        .send(
+          new GetObjectCommand({
+            Bucket: S3_BUCKET_NAME,
+            Key: generateFileName(userId, fileName),
+          })
+        )
+        .catch((err: S3ServiceException) => {
+          if (err.name === "NoSuchKey") {
+            throw s3FileNotFound(fileName);
+          } else {
+            throw errorDownloadingS3File(fileName);
+          }
         });
 
       return data;
@@ -102,7 +118,7 @@ export const createStoreFileS3Controller = (
       list.Contents?.forEach((file) => {
         if (file.Key) {
           fileNames.push({
-            name: file.Key,
+            name: file.Key.split("name:")[1],
             size: file.Size,
             modified: file.LastModified,
           });
@@ -112,8 +128,10 @@ export const createStoreFileS3Controller = (
       return { files: fileNames, nextToken: list.NextContinuationToken };
     },
 
-    async deleteFiles({ files }) {
-      const deleteObjectsKeys = files.map((el) => ({ Key: el }));
+    async deleteFiles({ files, userId }) {
+      const deleteObjectsKeys = files.map((name) => ({
+        Key: generateFileName(userId, name),
+      }));
 
       await s3Client.send(
         new DeleteObjectsCommand({
