@@ -4,15 +4,12 @@ import { UserSubscriptionRepository } from "@/repositories/subscription.interfac
 
 import { stripeWebhookEventNotSupported } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
 
-const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
-
-const stripe = new Stripe(STRIPE_API_KEY);
-
 interface SubscriptionsWHController {
   handleWebhook: (event: Stripe.Event) => void;
 }
 
 export const createSubscriptionsWHController = (
+  stripe: Stripe,
   userSubRepository: UserSubscriptionRepository
 ): SubscriptionsWHController => {
   return {

@@ -27,8 +27,10 @@ const subscriptionController = createSubscriptionController(
   userSubRepository,
   userRepository
 );
-const subscriptionWHController =
-  createSubscriptionsWHController(userSubRepository);
+const subscriptionWHController = createSubscriptionsWHController(
+  stripe,
+  userSubRepository
+);
 
 router.get("/", async (_, res, next) => {
   await subscriptionController
