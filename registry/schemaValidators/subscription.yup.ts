@@ -5,8 +5,9 @@ const getUserSubsSchema = yup.object({
   userId: yup.string().required(),
 });
 
-const createSubCheckoutSchema = getUserSubsSchema.shape({
+const createCheckoutSchema = getUserSubsSchema.shape({
   priceId: yup.string().required(),
+  seats: yup.number().min(0).default(1).required()
 });
 
 const updateUserSubSchema = getUserSubsSchema.shape({
@@ -14,7 +15,7 @@ const updateUserSubSchema = getUserSubsSchema.shape({
   newPriceId: yup.string().required(),
 });
 
-const removeUserSubSchema = getUserSubsSchema.shape({
+const cancelSubscriptionSchema = getUserSubsSchema.shape({
   subscriptionId: yup.string().required(),
 });
 
@@ -24,8 +25,8 @@ export const subscriptionValidator = (): SubscriptionValidator => {
       return await getUserSubsSchema.noUnknown().strict(true).validate(payload);
     },
 
-    async validateCreateSubCheckout(payload) {
-      return await createSubCheckoutSchema
+    async validateCreateCheckout(payload) {
+      return await createCheckoutSchema
         .noUnknown()
         .strict(true)
         .validate(payload);
@@ -38,8 +39,8 @@ export const subscriptionValidator = (): SubscriptionValidator => {
         .validate(payload);
     },
 
-    async validateCancelUserSub(payload) {
-      return await removeUserSubSchema
+    async validateCancelSubscription(payload) {
+      return await cancelSubscriptionSchema
         .noUnknown()
         .strict(true)
         .validate(payload);

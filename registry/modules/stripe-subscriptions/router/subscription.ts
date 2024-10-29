@@ -15,11 +15,15 @@ import { response } from "@/modules/shared/utils/response.js";
 
 const router = express.Router();
 
-const userRepository = createUserRepository()
+const userRepository = createUserRepository();
 const userSubRepository = createUserSubRepository();
 
-const subscriptionController = createSubscriptionController(userSubRepository, userRepository);
-const subscriptionWHController = createSubscriptionsWHController(userSubRepository);
+const subscriptionController = createSubscriptionController(
+  userSubRepository,
+  userRepository
+);
+const subscriptionWHController =
+  createSubscriptionsWHController(userSubRepository);
 
 router.get("/", async (_, res, next) => {
   await subscriptionController
@@ -65,11 +69,11 @@ router
     const { subscriptionId } = req.params;
 
     await subscriptionValidator()
-      .validateCancelUserSub({
+      .validateCancelSubscription({
         userId: user.userId,
         subscriptionId,
       })
-      .then(subscriptionController.cancelUserSub)
+      .then(subscriptionController.cancelSubscription)
       .then(() => res.json(response()))
       .catch(next);
   })
@@ -78,25 +82,25 @@ router
     const { subscriptionId } = req.params;
 
     await subscriptionValidator()
-      .validateCancelUserSub({
+      .validateCancelSubscription({
         userId: user.userId,
         subscriptionId,
       })
-      .then(subscriptionController.stopUserSubCancellation)
+      .then(subscriptionController.stopCancellation)
       .then(() => res.json(response()))
       .catch(next);
   });
 
-router.get("/checkout/:priceId", protectedRoute, async (req, res, next) => {
+router.get("/payment/checkout", protectedRoute, async (req, res, next) => {
   const user = req.user!;
-  const { priceId } = req.params;
+  const payload = req.body;
 
   await subscriptionValidator()
-    .validateCreateSubCheckout({
+    .validateCreateCheckout({
+      ...payload,
       userId: user.userId,
-      priceId,
     })
-    .then(subscriptionController.createSubCheckout)
+    .then(subscriptionController.createCheckout)
     .then((result) => res.json(response(result)))
     .catch(next);
 });

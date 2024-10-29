@@ -5,8 +5,9 @@ const getUserSubsSchema = z.object({
   userId: z.string(),
 });
 
-const createSubCheckoutSchema = getUserSubsSchema.extend({
+const createCheckoutSchema = getUserSubsSchema.extend({
   priceId: z.string(),
+  seats: z.number().min(0).default(1),
 });
 
 const updateUserSubSchema = getUserSubsSchema.extend({
@@ -14,7 +15,7 @@ const updateUserSubSchema = getUserSubsSchema.extend({
   newPriceId: z.string(),
 });
 
-const cancelUserSubSchema = getUserSubsSchema.extend({
+const cancelSubscriptionSchema = getUserSubsSchema.extend({
   subscriptionId: z.string(),
 });
 
@@ -24,16 +25,16 @@ export const subscriptionValidator = (): SubscriptionValidator => {
       return await getUserSubsSchema.parseAsync(payload);
     },
 
-    async validateCreateSubCheckout(payload) {
-      return await createSubCheckoutSchema.parseAsync(payload);
+    async validateCreateCheckout(payload) {
+      return await createCheckoutSchema.parseAsync(payload);
     },
 
     async validateUpdateUserSub(payload) {
       return await updateUserSubSchema.parseAsync(payload);
     },
 
-    async validateCancelUserSub(payload) {
-      return await cancelUserSubSchema.parseAsync(payload);
+    async validateCancelSubscription(payload) {
+      return await cancelSubscriptionSchema.parseAsync(payload);
     },
   };
 };

@@ -2,13 +2,13 @@ import Stripe from "stripe";
 
 import {
   GetUserSubsSchema,
-  CreateSubCheckoutSchema,
-  CancelUserSubSchema,
+  CreateCheckoutSchema,
+  CancelSubscriptionSchema,
   UpdateUserSubSchema,
 } from "@/schemaValidators/subscription.interface.js";
 
 import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
-import {UserRepository} from "@/repositories/user.interface.js"
+import { UserRepository } from "@/repositories/user.interface.js";
 
 import { subscriptionNotFound } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
 
@@ -24,7 +24,6 @@ type SubscriptionPrices = {
   amount: number | null;
 };
 
-// TODO: Per seat pricing (using quantities?)
 type Subscription = {
   plan: string;
   priceId: string;
@@ -49,15 +48,17 @@ interface SubscriptionController {
     props: GetUserSubsSchema
   ) => Promise<{ userSubscriptions: UserSubsOutput[] }>;
 
-  createSubCheckout: (
-    props: CreateSubCheckoutSchema
+  createCheckout: (
+    props: CreateCheckoutSchema
   ) => Promise<{ url: string }>;
 
   updateUserSub: (props: UpdateUserSubSchema) => Promise<UserSubsOutput>;
 
-  cancelUserSub: (props: CancelUserSubSchema) => void;
+  updateSeats: (seats: number) => Promise<UserSubsOutput>;
 
-  stopUserSubCancellation: (props: CancelUserSubSchema) => void;
+  cancelSubscription: (props: CancelSubscriptionSchema) => void;
+
+  stopCancellation: (props: CancelSubscriptionSchema) => void;
 }
 
 export const createSubscriptionController = (
@@ -146,7 +147,7 @@ export const createSubscriptionController = (
       return { userSubscriptions };
     },
 
-    async createSubCheckout({ userId, priceId }) {
+    async createCheckout({ userId, priceId, seats }) {
       const userSubscription = await userSubRepository
         .getUserSubscriptions(userId)
         .then((res) => res.at(0));
@@ -165,7 +166,13 @@ export const createSubscriptionController = (
         ...customerData,
         client_reference_id: userId,
         customer_creation: "always",
-        line_items: [{ quantity: 1, price: priceId }],
+        line_items: [
+          {
+            adjustable_quantity: { enabled: true },  // Remove this line if your subscription is not per seat based
+            quantity: seats,
+            price: priceId,
+          },
+        ],
         subscription_data: { metadata: { userId } },
         saved_payment_method_options: { payment_method_save: "enabled" },
         success_url: CHECKOUT_SUCCESS_URL,
@@ -211,7 +218,22 @@ export const createSubscriptionController = (
       }
     },
 
-    async cancelUserSub({ userId, subscriptionId }) {
+    async updateSeats(seats) {
+      // TODO: Get subscription seats (item quantity)
+      // 
+      // if INCREASE:
+      //    Add new seats to subscription
+      // if REDUCE:
+      //        Check how many people have this subscription (MANAGED BY OUR DB)
+      //        If empty_seats > reduce_number -> update subscription
+      //        else return error
+      // 
+    },
+
+    // TODO: Add logic to add/remove users from a subscription (IF SEAT BASED)
+    // TODO: Return number of seats if quantity is more than 1
+
+    async cancelSubscription({ userId, subscriptionId }) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       if (subscription.metadata.userId === userId) {
@@ -223,7 +245,7 @@ export const createSubscriptionController = (
       }
     },
 
-    async stopUserSubCancellation({ userId, subscriptionId }) {
+    async stopCancellation({ userId, subscriptionId }) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       if (subscription.metadata.userId === userId) {
