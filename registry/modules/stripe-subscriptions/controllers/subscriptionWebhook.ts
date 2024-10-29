@@ -28,7 +28,7 @@ export const createSubscriptionsWHController = (
               { expand: ["data.items.data.price.product"] }
             );
 
-            const userId = stripeSub.metadata.userId;
+            const userId = parseInt(stripeSub.metadata.userId);
             const price = stripeSub.items.data[0].price;
             const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
 
@@ -47,10 +47,9 @@ export const createSubscriptionsWHController = (
           break;
         }
         case "customer.subscription.deleted": {
-          const customerId = event.data.object.customer as string;
           const subId = event.data.object.id;
 
-          userSubRepository.removeUserSubscription(customerId, subId);
+          userSubRepository.removeUserSubscription(subId);
           break;
         }
         default: {

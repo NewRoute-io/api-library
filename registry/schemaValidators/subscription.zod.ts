@@ -2,7 +2,7 @@ import z from "zod";
 import { SubscriptionValidator } from "./subscription.interface.js";
 
 const getUserSubsSchema = z.object({
-  userId: z.string(),
+  userId: z.number(),
 });
 
 const createCheckoutSchema = getUserSubsSchema.extend({
@@ -10,10 +10,15 @@ const createCheckoutSchema = getUserSubsSchema.extend({
   seats: z.number().min(0).default(1),
 });
 
-const updateUserSubSchema = getUserSubsSchema.extend({
+const updatePlanSchema = getUserSubsSchema.extend({
   subscriptionId: z.string(),
   newPriceId: z.string(),
 });
+
+const updateSeatsSchema = getUserSubsSchema.extend({
+  subscriptionId: z.string(),
+  newSeats: z.number().min(0)
+})
 
 const cancelSubscriptionSchema = getUserSubsSchema.extend({
   subscriptionId: z.string(),
@@ -29,8 +34,12 @@ export const subscriptionValidator = (): SubscriptionValidator => {
       return await createCheckoutSchema.parseAsync(payload);
     },
 
-    async validateUpdateUserSub(payload) {
-      return await updateUserSubSchema.parseAsync(payload);
+    async validateUpdatePlanSub(payload) {
+      return await updatePlanSchema.parseAsync(payload);
+    },
+
+    async validateUpdateSeats(payload) {
+      return await updateSeatsSchema.parseAsync(payload);
     },
 
     async validateCancelSubscription(payload) {

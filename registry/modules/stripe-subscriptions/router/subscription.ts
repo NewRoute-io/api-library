@@ -51,12 +51,12 @@ router.patch(
     const payload = req.body;
 
     await subscriptionValidator()
-      .validateUpdateUserSub({
+      .validateUpdatePlanSub({
         ...payload,
         subscriptionId,
         userId: user.userId,
       })
-      .then(subscriptionController.updateUserSub)
+      .then(subscriptionController.updatePlan)
       .then((result) => res.json(response(result)))
       .catch(next);
   }

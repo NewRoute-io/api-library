@@ -4,6 +4,7 @@ CREATE TABLE user_subscriptions (
     "user_id" INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, 
     "customer_id" VARCHAR,
     "subscription_id" VARCHAR NOT NULL,
+    "is_owner" BOOLEAN NOT NULL DEFAULT TRUE,
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
     UNIQUE (user_id, customer_id)
 );

@@ -1,23 +1,29 @@
 export type GetUserSubsSchema = {
-  userId: string;
+  userId: number;
 };
 
 export type CreateCheckoutSchema = {
-  userId: string;
+  userId: number;
   priceId: string;
   seats: number;
 };
 
 export type GetSubscriptionSchema = {
-  userId: string;
+  userId: number;
   subscriptionId: string;
 };
 
-export type UpdateUserSubSchema = {
-  userId: string;
+export type UpdatePlanSchema = {
+  userId: number;
   subscriptionId: string;
   newPriceId: string;
 };
+
+export type UpdateSubscriptionSeatsSchema = {
+    userId: number;
+    subscriptionId: string;
+    newSeats: number;
+}
 
 export type CancelSubscriptionSchema = GetSubscriptionSchema;
 
@@ -30,9 +36,13 @@ export interface SubscriptionValidator {
     createCheckoutPayload: CreateCheckoutSchema
   ) => Promise<CreateCheckoutSchema>;
 
-  validateUpdateUserSub: (
-    updateSubPayload: UpdateUserSubSchema
-  ) => Promise<UpdateUserSubSchema>;
+  validateUpdatePlanSub: (
+    updatePlanPayload: UpdatePlanSchema
+  ) => Promise<UpdatePlanSchema>;
+
+  validateUpdateSeats: (
+    updateSeatsPayload: UpdateSubscriptionSeatsSchema
+  ) => Promise<UpdateSubscriptionSeatsSchema>;
 
   validateCancelSubscription: (
     cancelSubPayload: CancelSubscriptionSchema

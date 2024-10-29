@@ -20,12 +20,17 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
       throw notImplementedError(); // Remove when implemented
     },
 
+    async getSubscriptionUsers(subscriptionId) {
+      // REPLACE: Implement subscription users retrieval with your DB of choice
+      throw notImplementedError(); // Remove when implemented
+    },
+
     async createUserSubscription(props) {
       // REPLACE: Implement subscription creation with your DB of choice
       throw notImplementedError(); // Remove when implemented
     },
 
-    async removeUserSubscription(userId, subId) {
+    async removeUserSubscription(subscriptionId) {
       // REPLACE: Implement subscription deletion with your DB of choice
       throw notImplementedError(); // Remove when implemented
     },

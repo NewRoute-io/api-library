@@ -2,7 +2,7 @@ import yup from "yup";
 import { SubscriptionValidator } from "./subscription.interface.js";
 
 const getUserSubsSchema = yup.object({
-  userId: yup.string().required(),
+  userId: yup.number().required(),
 });
 
 const createCheckoutSchema = getUserSubsSchema.shape({
@@ -10,10 +10,15 @@ const createCheckoutSchema = getUserSubsSchema.shape({
   seats: yup.number().min(0).default(1).required()
 });
 
-const updateUserSubSchema = getUserSubsSchema.shape({
+const updatePlanSchema = getUserSubsSchema.shape({
   subscriptionId: yup.string().required(),
   newPriceId: yup.string().required(),
 });
+
+const updateSeatsSchema = getUserSubsSchema.shape({
+  subscriptionId: yup.string().required(),
+  newSeats: yup.number().min(0).required()
+})
 
 const cancelSubscriptionSchema = getUserSubsSchema.shape({
   subscriptionId: yup.string().required(),
@@ -32,11 +37,15 @@ export const subscriptionValidator = (): SubscriptionValidator => {
         .validate(payload);
     },
 
-    async validateUpdateUserSub(payload) {
-      return await updateUserSubSchema
+    async validateUpdatePlanSub(payload) {
+      return await updatePlanSchema
         .noUnknown()
         .strict(true)
         .validate(payload);
+    },
+
+    async validateUpdateSeats(payload) {
+      return await updateSeatsSchema.noUnknown().strict(true).validate(payload);
     },
 
     async validateCancelSubscription(payload) {

@@ -1,18 +1,20 @@
 export interface UserSubscriptionRepository {
-  getUserSubscriptions: (userId: string) => Promise<UserSubscription[]>;
+  getUserSubscriptions: (userId: number) => Promise<UserSubscription[]>;
+  getSubscriptionUsers: (subscriptionId: string) => Promise<UserSubscription[]>;
   createUserSubscription: (
     props: CreateUserSubscription
   ) => Promise<UserSubscription>;
-  removeUserSubscription: (userId: string, subId: string) => void;
+  removeUserSubscription: (subscriptionId: string) => void;
 }
 
 type CreateUserSubscription = {
   plan: string;
-  userId: string;
-  customerId: string;
+  userId: number;
+  customerId?: string;
   subscriptionId: string;
 };
 
 export interface UserSubscription extends CreateUserSubscription {
+  isOwner: boolean;
   createdAt: string;
 }

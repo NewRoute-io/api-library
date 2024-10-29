@@ -11,7 +11,7 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
       const query: QueryConfig = {
         name: "queryGetUserSubscriptions",
         text: `
-            SELECT plan, user_id, customer_id, subscription_id, created_at
+            SELECT plan, user_id, customer_id, subscription_id, is_owner, created_at
             FROM user_subscriptions 
             WHERE user_id = $1;
         `,
@@ -27,6 +27,35 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
           userId: el.user_id,
           customerId: el.customer_id,
           subscriptionId: el.subscription_id,
+          isOwner: el.is_owner,
+          createdAt: el.created_at,
+        })
+      );
+
+      return subscriptions;
+    },
+
+    async getSubscriptionUsers(subscriptionId) {
+      const query: QueryConfig = {
+        name: "queryGetSubscriptionUsers",
+        text: `
+            SELECT plan, user_id, customer_id, subscription_id, is_owner, created_at
+            FROM user_subscriptions 
+            WHERE subscription_id = $1;
+        `,
+        values: [subscriptionId],
+      };
+      const result = await pgPool.query(query).then((data) => data.rows);
+
+      const subscriptions: UserSubscription[] = [];
+
+      result.forEach((el) =>
+        subscriptions.push({
+          plan: el.plan,
+          userId: el.user_id,
+          customerId: el.customer_id,
+          subscriptionId: el.subscription_id,
+          isOwner: el.is_owner,
           createdAt: el.created_at,
         })
       );
@@ -46,7 +75,7 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
                 SET plan = EXCLUDED.plan, 
                     subscription_id = EXCLUDED.subscription_id,
                     created_at = DEFAULT
-            RETURNING plan, user_id, customer_id, subscription_id, created_at;
+            RETURNING plan, user_id, customer_id, subscription_id, is_owner, created_at;
         `,
         values: [plan, userId, customerId, subscriptionId],
       };
@@ -58,19 +87,19 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
         userId: result.user_id,
         customerId: result.customer_id,
         subscriptionId: result.subscription_id,
+        isOwner: result.is_owner,
         createdAt: result.created_at,
       };
     },
 
-    async removeUserSubscription(userId, subId) {
+    async removeUserSubscription(subscriptionId) {
       const query: QueryConfig = {
         name: "queryRemoveUserSubscription",
         text: `
             DELETE FROM user_subscriptions
-            WHERE user_id = $1
-                AND subscription_id = $2;
+            WHERE subscription_id = $1;
         `,
-        values: [userId, subId],
+        values: [subscriptionId],
       };
 
       await pgPool.query(query);

@@ -8,6 +8,14 @@ export const subscriptionNotFound = (subscriptionId: string) => {
   );
 };
 
+export const noEmptySeatsToRemove = () => {
+  return new HttpError(
+    "NoEmptySeatsToRemove",
+    `All seats are currently used. Remove users from the subscription before reducing the seat number`,
+    409
+  );
+};
+
 export const stripeWebhookValidationError = (error?: Error) => {
   return new HttpError(
     "StripeWebhookValidationError",
