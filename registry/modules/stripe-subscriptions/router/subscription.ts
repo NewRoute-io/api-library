@@ -42,28 +42,52 @@ router.get("/user", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-router.patch(
-  "/user/:subscriptionId",
-  protectedRoute,
-  async (req, res, next) => {
+router
+  .route("/:subscriptionId/seat")
+  .patch(protectedRoute, async (req, res, next) => {
     const user = req.user!;
     const { subscriptionId } = req.params;
     const payload = req.body;
 
     await subscriptionValidator()
-      .validateUpdatePlanSub({
+      .validateUpdateSeats({
         ...payload,
-        subscriptionId,
         userId: user.userId,
+        subscriptionId,
       })
-      .then(subscriptionController.updatePlan)
-      .then((result) => res.json(response(result)))
+      .then(subscriptionController.updateSeats)
+      .then(() => res.json(response()))
       .catch(next);
-  }
-);
+  })
+  .post(protectedRoute, async (req, res, next) => {
+    const user = req.user!;
+    const { subscriptionId } = req.params;
+
+    await subscriptionValidator()
+      .validateAddUserToSeat({
+        userId: user.userId,
+        subscriptionId,
+      })
+      .then(subscriptionController.addUserToSeat)
+      .then(() => res.json(response()))
+      .catch(next);
+  })
+  .delete(protectedRoute, async (req, res, next) => {
+    const user = req.user!;
+    const { subscriptionId } = req.params;
+
+    await subscriptionValidator()
+      .validateRemoveUserFromSeat({
+        userId: user.userId,
+        subscriptionId,
+      })
+      .then(subscriptionController.removeUserFromSeat)
+      .then(() => res.json(response()))
+      .catch(next);
+  });
 
 router
-  .route("/user/:subscriptionId/cancel")
+  .route("/:subscriptionId/cancel")
   .delete(protectedRoute, async (req, res, next) => {
     const user = req.user!;
     const { subscriptionId } = req.params;
@@ -115,6 +139,22 @@ router.post("webhook", validateStripeSignature, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.patch("/:subscriptionId", protectedRoute, async (req, res, next) => {
+  const user = req.user!;
+  const { subscriptionId } = req.params;
+  const payload = req.body;
+
+  await subscriptionValidator()
+    .validateUpdatePlanSub({
+      ...payload,
+      subscriptionId,
+      userId: user.userId,
+    })
+    .then(subscriptionController.updatePlan)
+    .then((result) => res.json(response(result)))
+    .catch(next);
 });
 
 export { router };
