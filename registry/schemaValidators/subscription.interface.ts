@@ -8,6 +8,8 @@ export type CreateCheckoutSchema = {
   seats: number;
 };
 
+export type CreatePaymentLinkSchema = CreateCheckoutSchema;
+
 export type GetSubscriptionSchema = {
   userId: number;
   subscriptionId: string;
@@ -38,6 +40,10 @@ export interface SubscriptionValidator {
   validateCreateCheckout: (
     createCheckoutPayload: CreateCheckoutSchema
   ) => Promise<CreateCheckoutSchema>;
+
+  validateCreatePaymentLink: (
+    createPaymentLink: CreatePaymentLinkSchema
+  ) => Promise<CreatePaymentLinkSchema>;
 
   validateUpdatePlanSub: (
     updatePlanPayload: UpdatePlanSchema

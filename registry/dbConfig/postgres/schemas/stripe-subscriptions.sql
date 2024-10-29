@@ -6,7 +6,7 @@ CREATE TABLE user_subscriptions (
     "subscription_id" VARCHAR NOT NULL,
     "is_owner" BOOLEAN NOT NULL DEFAULT TRUE,
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE (user_id, customer_id)
+    UNIQUE (user_id, subscription_id)
 );
 
 CREATE INDEX idx_user_subscriptions_plan ON user_subscriptions(plan);

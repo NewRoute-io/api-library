@@ -22,6 +22,9 @@ vi.mock("stripe", () => {
           create: vi.fn(),
         },
       },
+      paymentLinks: {
+        create: vi.fn(),
+      },
       prices: {
         list: vi.fn(),
       },
@@ -142,7 +145,7 @@ describe("stripe-subscriptions API Module tests", () => {
       });
     });
 
-    it("should create a checkout session with existing Stripe Customer and return URL", async () => {
+    it("should create a Checkout Session with existing Stripe Customer and return URL", async () => {
       const mockUrl = "https://checkout.stripe.com/test-session";
 
       (subscriptionRepoMock.getUserSubscriptions as Mock).mockResolvedValue([
@@ -177,7 +180,7 @@ describe("stripe-subscriptions API Module tests", () => {
       expect(result.url).toBe(mockUrl);
     });
 
-    it("should create a checkout session with email and return URL", async () => {
+    it("should create a Checkout Session with email and return URL", async () => {
       const mockUrl = "https://checkout.stripe.com/test-session";
       const mockUser = { email: "mock@mail.com" };
 
@@ -209,6 +212,38 @@ describe("stripe-subscriptions API Module tests", () => {
         subscription_data: { metadata: { userId: mockUserId } },
         saved_payment_method_options: { payment_method_save: "enabled" },
         mode: "subscription",
+      });
+
+      expect(result.url).toBe(mockUrl);
+    });
+
+    it("should create a Payment Link", async () => {
+      const mockUrl = "https://checkout.stripe.com/test-session";
+
+      (stripe.paymentLinks.create as Mock).mockResolvedValue({
+        url: mockUrl,
+      });
+
+      const result = await controller.createPaymentLink({
+        userId: mockUserId,
+        priceId: mockPriceId,
+        seats: 1,
+      });
+
+      expect(stripe.paymentLinks.create).toHaveBeenCalledWith({
+        customer_creation: "always",
+        line_items: [
+          {
+            adjustable_quantity: { enabled: true },
+            quantity: 1,
+            price: mockPriceId,
+          },
+        ],
+        subscription_data: { metadata: { userId: mockUserId } },
+        after_completion: {
+          type: "redirect",
+          redirect: {},
+        },
       });
 
       expect(result.url).toBe(mockUrl);
@@ -296,10 +331,14 @@ describe("stripe-subscriptions API Module tests", () => {
       (stripe.subscriptionItems.update as Mock).mockResolvedValue(
         mockNewSubItem
       );
+
       (subscriptionRepoMock.createUserSubscription as Mock).mockResolvedValue({
         subscriptionId: mockSubId,
         createdAt: mockNewUserSub.createdAt,
       });
+      (subscriptionRepoMock.getSubscriptionUsers as Mock).mockResolvedValue([
+        mockUserSub,
+      ]);
 
       const result = await controller.updatePlan({
         userId: mockUserId,

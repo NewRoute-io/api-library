@@ -70,10 +70,9 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
         text: `
             INSERT INTO user_subscriptions (plan, user_id, customer_id, subscription_id, is_owner)
             VALUES ($1, $2, $3, $4, COALESCE($5, true))
-            ON CONFLICT (user_id, customer_id)
+            ON CONFLICT (user_id, subscription_id)
                 DO UPDATE
                 SET plan = EXCLUDED.plan, 
-                    subscription_id = EXCLUDED.subscription_id,
                     created_at = DEFAULT
             RETURNING plan, user_id, customer_id, subscription_id, is_owner, created_at;
         `,

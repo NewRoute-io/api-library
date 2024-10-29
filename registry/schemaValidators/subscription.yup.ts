@@ -41,6 +41,13 @@ export const subscriptionValidator = (): SubscriptionValidator => {
         .validate(payload);
     },
 
+    async validateCreatePaymentLink(payload) {
+      return await createCheckoutSchema
+        .noUnknown()
+        .strict(true)
+        .validate(payload);
+    },
+
     async validateUpdatePlanSub(payload) {
       return await updatePlanSchema.noUnknown().strict(true).validate(payload);
     },

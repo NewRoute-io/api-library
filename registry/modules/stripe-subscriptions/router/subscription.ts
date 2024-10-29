@@ -136,6 +136,20 @@ router.get("/payment/checkout", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
+router.get("/payment/link", protectedRoute, async (req, res, next) => {
+  const user = req.user!;
+  const payload = req.body;
+
+  await subscriptionValidator()
+    .validateCreatePaymentLink({
+      ...payload,
+      userId: user.userId,
+    })
+    .then(subscriptionController.createPaymentLink)
+    .then((result) => res.json(response(result)))
+    .catch(next);
+});
+
 router.post("webhook", validateStripeSignature, async (req, res, next) => {
   try {
     const eventPayload = req.stripeEvent!;

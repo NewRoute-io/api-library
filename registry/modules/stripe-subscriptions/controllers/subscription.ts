@@ -10,18 +10,21 @@ import {
   RemoveUserFromSeatSchema,
 } from "@/schemaValidators/subscription.interface.js";
 
-import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
+import {
+  UserSubscription,
+  UserSubscriptionRepository,
+} from "@/repositories/subscription.interface.js";
 import { UserRepository } from "@/repositories/user.interface.js";
 
 import {
   subscriptionNotFound,
   noEmptySeatsToRemove,
   noAvailableSeats,
-  cantRemoveSubOwner
+  cantRemoveSubOwner,
 } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
 
-const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL;
-const CHECKOUT_CANCEL_URL = process.env.CHECKOUT_CANCEL_URL;
+const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL as string;
+const CHECKOUT_CANCEL_URL = process.env.CHECKOUT_CANCEL_URL as string;
 
 type SubscriptionPrices = {
   currency: string;
@@ -55,6 +58,8 @@ interface SubscriptionController {
   ) => Promise<{ userSubscriptions: UserSubsOutput[] }>;
 
   createCheckout: (props: CreateCheckoutSchema) => Promise<{ url: string }>;
+
+  createPaymentLink: (props: CreateCheckoutSchema) => Promise<{ url: string }>;
 
   addUserToSeat: (props: AddUserToSeatSchema) => void;
 
@@ -174,6 +179,28 @@ export const createSubscriptionController = (
       return { url: checkout.url! };
     },
 
+    async createPaymentLink({ userId, priceId, seats }) {
+      const paymentLink = await stripe.paymentLinks.create({
+        customer_creation: "always",
+        line_items: [
+          {
+            adjustable_quantity: { enabled: true }, // Remove this line if your subscription is not per seat based
+            quantity: seats,
+            price: priceId,
+          },
+        ],
+        subscription_data: { metadata: { userId } },
+        after_completion: {
+          type: "redirect",
+          redirect: {
+            url: CHECKOUT_SUCCESS_URL,
+          },
+        },
+      });
+
+      return { url: paymentLink.url };
+    },
+
     async addUserToSeat({ userId, subscriptionId }) {
       const subscriptionItem = await stripe.subscriptions
         .retrieve(subscriptionId, {
@@ -226,19 +253,29 @@ export const createSubscriptionController = (
           product.name
         );
 
-        const newUserSub = await userSubRepository.createUserSubscription({
-          userId,
-          subscriptionId: newSubscriptionItem.subscription,
-          plan: newPlanKey,
-          customerId: subscription.customer as string,
-        });
+        const subscriptionUsers = await userSubRepository.getSubscriptionUsers(
+          subscriptionId
+        );
+
+        // Update the plan for all users with this subscription ID
+        let updatedSubscriptions: UserSubscription[] = [];
+        for (const user of subscriptionUsers) {
+          const userSub = await userSubRepository.createUserSubscription({
+            userId: user.userId,
+            subscriptionId: newSubscriptionItem.subscription,
+            plan: newPlanKey,
+            customerId: user.customerId,
+          });
+
+          updatedSubscriptions.push(userSub);
+        }
 
         return {
           plan: newPlanKey,
-          subscriptionId: newUserSub.subscriptionId,
           isOwner: true,
           seats: newSubscriptionItem.quantity,
-          createdAt: newUserSub.createdAt,
+          subscriptionId: updatedSubscriptions[0].subscriptionId,
+          createdAt: updatedSubscriptions[0].createdAt,
         };
       } else {
         throw subscriptionNotFound(subscriptionId);

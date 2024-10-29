@@ -38,6 +38,10 @@ export const subscriptionValidator = (): SubscriptionValidator => {
       return await createCheckoutSchema.parseAsync(payload);
     },
 
+    async validateCreatePaymentLink(payload) {
+      return await createCheckoutSchema.parseAsync(payload);
+    },
+
     async validateUpdatePlanSub(payload) {
       return await updatePlanSchema.parseAsync(payload);
     },
