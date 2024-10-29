@@ -26,7 +26,7 @@ export const protectedRoute: RequestHandler = async (req, _, next) => {
 
   try {
     const { userId } = accessTokenManager.validate(accessToken);
-    const user = await userRepository.getUserById(userId);
+    const user = await userRepository.getUserById(parseInt(userId));
 
     if (user) {
       req.user = user;

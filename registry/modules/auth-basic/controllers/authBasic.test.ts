@@ -25,7 +25,7 @@ describe("auth-basic API Module tests", () => {
     let rtRepositoryMock: RefreshTokenRepository;
 
     const mockUser: User = {
-      userId: "1",
+      userId: 1,
       username: "testUser",
       password: "hashedPassword",
       createdAt: new Date().toISOString(),
