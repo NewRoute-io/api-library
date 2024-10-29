@@ -90,10 +90,15 @@ describe("auth-basic API Module tests", () => {
         password: "123",
       };
 
+      const mockNewUser = {
+        userId: 123,
+        ...signupData,
+      };
+
       (userRepositoryMock.getUser as Mock).mockResolvedValue(null);
       (argon.hash as Mock).mockResolvedValue("hashedPass");
       (userRepositoryMock.createAuthBasicUser as Mock).mockResolvedValue(
-        signupData
+        mockNewUser
       );
 
       const result = await controller.signup(signupData);
@@ -107,7 +112,7 @@ describe("auth-basic API Module tests", () => {
         hashedPass: "hashedPass",
       });
 
-      expect(result.user).toEqual(signupData);
+      expect(result.user).toEqual(mockNewUser);
     });
 
     it("should throw invalidLoginCredentials when logging in with wrong username", async () => {
