@@ -1,16 +1,23 @@
 import z from "zod";
 import { StoreFileValidator } from "./storeFile.interface.js";
 
+const fileNameSchema = z
+  .string()
+  .regex(/^[a-zA-Z0-9._-]{1,255}$/, "Invalid file name");
+
 const getFileSchema = z.object({
-  fileName: z.string(),
+  userId: z.number(),
+  fileName: fileNameSchema,
 });
 
 const listFilesSchema = z.object({
+  userId: z.number(),
   pageToken: z.string().optional(),
 });
 
 const deleteFilesSchema = z.object({
-  files: z.array(z.string()),
+  userId: z.number(),
+  files: z.array(fileNameSchema),
 });
 
 export const storeFileValidator = (): StoreFileValidator => {

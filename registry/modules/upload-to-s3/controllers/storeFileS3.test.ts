@@ -42,6 +42,7 @@ describe("upload-to-s3 API Module Tests", () => {
     const s3Client = new S3Client({});
     let controller: ReturnType<typeof createStoreFileS3Controller>;
 
+    const mockUserId = 1;
     const mockFileName = "test-file.txt";
     const mockFile = {
       originalFilename: mockFileName,
@@ -114,7 +115,10 @@ describe("upload-to-s3 API Module Tests", () => {
         .on(GetObjectCommand)
         .resolves({ Body: sdkStream, ContentType: mockFile.mimetype });
 
-      const result = await controller.downloadFile({ fileName: mockFileName });
+      const result = await controller.downloadFile({
+        fileName: mockFileName,
+        userId: mockUserId,
+      });
       const bodyStr = await result.Body?.transformToString();
 
       expect(result.ContentType).toBe(mockFile.mimetype);
@@ -125,7 +129,7 @@ describe("upload-to-s3 API Module Tests", () => {
       s3Mock.on(GetObjectCommand).rejects();
 
       await expect(
-        controller.downloadFile({ fileName: mockFileName })
+        controller.downloadFile({ fileName: mockFileName, userId: mockUserId })
       ).rejects.toThrowError(errorDownloadingS3File(mockFileName));
     });
 
@@ -141,7 +145,7 @@ describe("upload-to-s3 API Module Tests", () => {
       s3Mock.on(ListObjectsV2Command).resolves({
         Contents: [
           {
-            Key: mockContent.name,
+            Key: `owner:${mockUserId}_name:${mockContent.name}`,
             Size: mockContent.size,
             LastModified: mockContent.modified,
           },
@@ -152,6 +156,7 @@ describe("upload-to-s3 API Module Tests", () => {
 
       const result = await controller.getFileList({
         pageToken: ContinuationToken,
+        userId: mockUserId,
       });
 
       expect(result.files).toContainEqual(mockContent);
@@ -161,16 +166,18 @@ describe("upload-to-s3 API Module Tests", () => {
     it("should throw cantGetS3Files if S3 can't list files in bucket", async () => {
       s3Mock.on(ListObjectsV2Command).rejects();
 
-      await expect(controller.getFileList({})).rejects.toThrowError(
-        cantGetS3Files()
-      );
+      await expect(
+        controller.getFileList({ userId: mockUserId })
+      ).rejects.toThrowError(cantGetS3Files());
     });
 
     it("should delete a file from S3", async () => {
       const filesToDelete = [mockFileName];
       s3Mock.on(DeleteObjectsCommand).resolves({});
 
-      expect(controller.deleteFiles({ files: filesToDelete })).toBeTruthy();
+      expect(
+        controller.deleteFiles({ files: filesToDelete, userId: mockUserId })
+      ).toBeTruthy();
     });
   });
 });

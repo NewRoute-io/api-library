@@ -1,9 +1,9 @@
 import { HttpError } from "@/modules/shared/utils/errors/HttpError.js";
 
-export const fileUploadFailed = (errorCode?: string) => {
+export const fileParseError = (errorCode?: string) => {
   return new HttpError(
-    "FileUploadFailed",
-    `There was an error uploading your file. ${
+    "FileParseError",
+    `File couldn't be parsed, please try again. ${
       errorCode && "Error code: " + errorCode
     }`,
     400
@@ -12,24 +12,28 @@ export const fileUploadFailed = (errorCode?: string) => {
 
 export const s3UploadFailed = () => {
   return new HttpError(
-    "S3FileUploadFailed",
-    `There was a problem when uploading your file to your S3 storage. Please check logs and try again`,
-    400
+    "FileUploadFailed",
+    `There was a problem uploading your file`,
+    500
   );
 };
 
 export const errorDownloadingS3File = (fileName: string) => {
   return new HttpError(
-    "ErrorDownloadingS3File",
-    `There was a problem when trying to download file ${fileName} from your S3 storage`,
+    "ErrorDownloadingFile",
+    `There was a problem downloading file ${fileName}`,
+    400
+  );
+};
+
+export const s3FileNotFound = (fileName: string) => {
+  return new HttpError(
+    "FileNotFound",
+    `File ${fileName} couldn't be found`,
     404
   );
 };
 
 export const cantGetS3Files = () => {
-  return new HttpError(
-    "CantGetS3Files",
-    `Fetching all your S3 files failed.`,
-    404
-  );
+  return new HttpError("CantGetFiles", `Couldn't get your files`, 400);
 };
