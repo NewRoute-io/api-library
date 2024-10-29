@@ -1,11 +1,11 @@
 export interface UserRepository {
   getUser: (username: string) => Promise<User | null>;
-  getUserById: (id: string) => Promise<User | null>;
+  getUserById: (id: number) => Promise<User | null>;
   createAuthBasicUser: (props: AuthBasicSignup) => Promise<User>;
 }
 
 export type User = {
-  userId: string;
+  userId: number;
   username: string;
   password: string;
   createdAt: string;

@@ -7,17 +7,17 @@ import {
 } from "./storeFile.interface.js";
 
 const getFileSchema = yup.object({
-  userId: yup.string().required(),
+  userId: yup.number().required(),
   fileName: yup.string().required(),
 });
 
 const listFilesSchema = yup.object({
-  userId: yup.string().required(),
+  userId: yup.number().required(),
   pageToken: yup.string(),
 });
 
 const deleteFilesSchema = yup.object({
-  userId: yup.string().required(),
+  userId: yup.number().required(),
   files: yup.array(yup.string().required()).required(),
 });
 

@@ -1,15 +1,15 @@
 export type GetFileSchema = {
-  userId: string;
+  userId: number;
   fileName: string;
 };
 
 export type ListFilesSchema = {
-  userId: string;
+  userId: number;
   pageToken?: string;
 };
 
 export type DeleteFilesSchema = {
-  userId: string;
+  userId: number;
   files: string[];
 };
 

@@ -50,7 +50,7 @@ export const createStoreFileS3Controller = (
   s3Client: S3Client
 ): StoreFileS3Controller => {
 
-  const generateFileName = (userId: string, name: string) => {
+  const generateFileName = (userId: number, name: string) => {
     return `owner:${userId}_name:${name}`;
   };
 

@@ -7,17 +7,17 @@ import {
 } from "./storeFile.interface.js";
 
 const getFileSchema = z.object({
-  userId: z.string(),
+  userId: z.number(),
   fileName: z.string(),
 });
 
 const listFilesSchema = z.object({
-  userId: z.string(),
+  userId: z.number(),
   pageToken: z.string().optional(),
 });
 
 const deleteFilesSchema = z.object({
-  userId: z.string(),
+  userId: z.number(),
   files: z.array(z.string()),
 });
 
