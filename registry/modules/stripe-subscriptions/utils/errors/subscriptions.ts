@@ -11,8 +11,24 @@ export const subscriptionNotFound = (subscriptionId: string) => {
 export const noEmptySeatsToRemove = () => {
   return new HttpError(
     "NoEmptySeatsToRemove",
-    `All seats are currently used. Remove users from the subscription before reducing the seat number`,
+    "All seats are currently used. Remove users from the subscription before reducing the seat number",
     409
+  );
+};
+
+export const noAvailableSeats = () => {
+  return new HttpError(
+    "NoAvailableSeats",
+    "Can't add this user to the subscription as there are no available seats to assign. Add more seats and try again",
+    409
+  );
+};
+
+export const cantRemoveSubOwner = () => {
+  return new HttpError(
+    "CantRemoveSubOwner",
+    "The subscription owner can't be removed. To remove a subscription for the owner you need to cancel the subscription",
+    400
   );
 };
 

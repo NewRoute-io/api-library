@@ -7,7 +7,7 @@ const getUserSubsSchema = yup.object({
 
 const createCheckoutSchema = getUserSubsSchema.shape({
   priceId: yup.string().required(),
-  seats: yup.number().min(0).default(1).required()
+  seats: yup.number().min(0).default(1).required(),
 });
 
 const updatePlanSchema = getUserSubsSchema.shape({
@@ -17,8 +17,12 @@ const updatePlanSchema = getUserSubsSchema.shape({
 
 const updateSeatsSchema = getUserSubsSchema.shape({
   subscriptionId: yup.string().required(),
-  newSeats: yup.number().min(0).required()
-})
+  newSeats: yup.number().min(0).required(),
+});
+
+const addUserToSeatSchema = getUserSubsSchema.shape({
+  subscriptionId: yup.string().required(),
+});
 
 const cancelSubscriptionSchema = getUserSubsSchema.shape({
   subscriptionId: yup.string().required(),
@@ -38,14 +42,25 @@ export const subscriptionValidator = (): SubscriptionValidator => {
     },
 
     async validateUpdatePlanSub(payload) {
-      return await updatePlanSchema
+      return await updatePlanSchema.noUnknown().strict(true).validate(payload);
+    },
+
+    async validateUpdateSeats(payload) {
+      return await updateSeatsSchema.noUnknown().strict(true).validate(payload);
+    },
+
+    async validateAddUserToSeat(payload) {
+      return await addUserToSeatSchema
         .noUnknown()
         .strict(true)
         .validate(payload);
     },
 
-    async validateUpdateSeats(payload) {
-      return await updateSeatsSchema.noUnknown().strict(true).validate(payload);
+    async validateRemoveUserFromSeat(payload) {
+      return await addUserToSeatSchema
+        .noUnknown()
+        .strict(true)
+        .validate(payload);
     },
 
     async validateCancelSubscription(payload) {

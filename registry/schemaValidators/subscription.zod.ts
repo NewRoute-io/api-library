@@ -17,8 +17,12 @@ const updatePlanSchema = getUserSubsSchema.extend({
 
 const updateSeatsSchema = getUserSubsSchema.extend({
   subscriptionId: z.string(),
-  newSeats: z.number().min(0)
-})
+  newSeats: z.number().min(0),
+});
+
+const addUserToSeatSchema = getUserSubsSchema.extend({
+  subscriptionId: z.string(),
+});
 
 const cancelSubscriptionSchema = getUserSubsSchema.extend({
   subscriptionId: z.string(),
@@ -40,6 +44,14 @@ export const subscriptionValidator = (): SubscriptionValidator => {
 
     async validateUpdateSeats(payload) {
       return await updateSeatsSchema.parseAsync(payload);
+    },
+
+    async validateAddUserToSeat(payload) {
+      return await addUserToSeatSchema.parseAsync(payload);
+    },
+
+    async validateRemoveUserFromSeat(payload) {
+      return await addUserToSeatSchema.parseAsync(payload);
     },
 
     async validateCancelSubscription(payload) {

@@ -25,6 +25,9 @@ export type UpdateSubscriptionSeatsSchema = {
     newSeats: number;
 }
 
+export type AddUserToSeatSchema = GetSubscriptionSchema;
+export type RemoveUserFromSeatSchema = GetSubscriptionSchema;
+
 export type CancelSubscriptionSchema = GetSubscriptionSchema;
 
 export interface SubscriptionValidator {
@@ -43,6 +46,14 @@ export interface SubscriptionValidator {
   validateUpdateSeats: (
     updateSeatsPayload: UpdateSubscriptionSeatsSchema
   ) => Promise<UpdateSubscriptionSeatsSchema>;
+
+  validateAddUserToSeat: (
+    addUserToSeatPayload: AddUserToSeatSchema
+  ) => Promise<AddUserToSeatSchema>;
+
+  validateRemoveUserFromSeat: (
+    removeUserFromSeat: RemoveUserFromSeatSchema
+  ) => Promise<RemoveUserFromSeatSchema>;
 
   validateCancelSubscription: (
     cancelSubPayload: CancelSubscriptionSchema

@@ -4,6 +4,7 @@ export interface UserSubscriptionRepository {
   createUserSubscription: (
     props: CreateUserSubscription
   ) => Promise<UserSubscription>;
+  removeUserFromSubscription: (userId: number, subscriptionId: string) => void;
   removeUserSubscription: (subscriptionId: string) => void;
 }
 
@@ -12,6 +13,7 @@ type CreateUserSubscription = {
   userId: number;
   customerId?: string;
   subscriptionId: string;
+  isOwner?: boolean;
 };
 
 export interface UserSubscription extends CreateUserSubscription {

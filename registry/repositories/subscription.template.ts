@@ -30,6 +30,11 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
       throw notImplementedError(); // Remove when implemented
     },
 
+    async removeUserFromSubscription(userId, subscriptionId) {
+      // REPLACE: Implement remove user from subscription with your DB of choice
+      throw notImplementedError(); // Remove when implemented
+    },
+
     async removeUserSubscription(subscriptionId) {
       // REPLACE: Implement subscription deletion with your DB of choice
       throw notImplementedError(); // Remove when implemented

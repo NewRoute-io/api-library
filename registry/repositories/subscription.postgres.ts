@@ -64,12 +64,12 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
     },
 
     async createUserSubscription(props) {
-      const { plan, userId, customerId, subscriptionId } = props;
+      const { plan, userId, customerId, subscriptionId, isOwner } = props;
       const query: QueryConfig = {
         name: "queryCreateUserSubscription",
         text: `
-            INSERT INTO user_subscriptions (plan, user_id, customer_id, subscription_id)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO user_subscriptions (plan, user_id, customer_id, subscription_id, is_owner)
+            VALUES ($1, $2, $3, $4, COALESCE($5, true))
             ON CONFLICT (user_id, customer_id)
                 DO UPDATE
                 SET plan = EXCLUDED.plan, 
@@ -77,7 +77,7 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
                     created_at = DEFAULT
             RETURNING plan, user_id, customer_id, subscription_id, is_owner, created_at;
         `,
-        values: [plan, userId, customerId, subscriptionId],
+        values: [plan, userId, customerId, subscriptionId, isOwner],
       };
 
       const result = await pgPool.query(query).then((data) => data.rows.at(0));
@@ -90,6 +90,21 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
         isOwner: result.is_owner,
         createdAt: result.created_at,
       };
+    },
+
+    async removeUserFromSubscription(userId, subscriptionId) {
+      const query: QueryConfig = {
+        name: "queryRemoveUserFromSubscription",
+        text: `
+            DELETE FROM user_subscriptions
+            WHERE user_id = $1
+              AND subscription_id = $2
+              AND is_owner = false;
+        `,
+        values: [userId, subscriptionId],
+      };
+
+      await pgPool.query(query);
     },
 
     async removeUserSubscription(subscriptionId) {

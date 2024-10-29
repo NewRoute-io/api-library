@@ -6,6 +6,8 @@ import {
   CancelSubscriptionSchema,
   UpdatePlanSchema,
   UpdateSubscriptionSeatsSchema,
+  AddUserToSeatSchema,
+  RemoveUserFromSeatSchema,
 } from "@/schemaValidators/subscription.interface.js";
 
 import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
@@ -14,6 +16,8 @@ import { UserRepository } from "@/repositories/user.interface.js";
 import {
   subscriptionNotFound,
   noEmptySeatsToRemove,
+  noAvailableSeats,
+  cantRemoveSubOwner
 } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
 
 const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
@@ -55,9 +59,13 @@ interface SubscriptionController {
 
   createCheckout: (props: CreateCheckoutSchema) => Promise<{ url: string }>;
 
+  addUserToSeat: (props: AddUserToSeatSchema) => void;
+
   updatePlan: (props: UpdatePlanSchema) => Promise<UserSubsOutput>;
 
   updateSeats: (props: UpdateSubscriptionSeatsSchema) => void;
+
+  removeUserFromSeat: (props: RemoveUserFromSeatSchema) => void;
 
   cancelSubscription: (props: CancelSubscriptionSchema) => void;
 
@@ -68,6 +76,10 @@ export const createSubscriptionController = (
   userSubRepository: UserSubscriptionRepository,
   userRepository: UserRepository
 ): SubscriptionController => {
+  const generatePlanKey = (priceKey: string | null, productName: string) => {
+    return priceKey || productName.toLowerCase().replaceAll(" ", "_");
+  };
+
   return {
     async getSubscriptions() {
       const stripePrices = await stripe.prices.list({
@@ -82,8 +94,7 @@ export const createSubscriptionController = (
         const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
         const { name, description, marketing_features } = product;
 
-        const planKey =
-          price.lookup_key || name.toLowerCase().replaceAll(" ", "_");
+        const planKey = generatePlanKey(price.lookup_key, name);
 
         const productFeatures = marketing_features
           .filter((el) => el.name !== undefined)
@@ -165,6 +176,38 @@ export const createSubscriptionController = (
       return { url: checkout.url! };
     },
 
+    async addUserToSeat({ userId, subscriptionId }) {
+      const subscriptionItem = await stripe.subscriptions
+        .retrieve(subscriptionId, {
+          expand: ["data.items.data.price.product"],
+        })
+        .then((data) => data.items.data[0]);
+
+      if (subscriptionItem.quantity === 1) {
+        throw noAvailableSeats();
+      }
+
+      const subscriptionUsers = await userSubRepository.getSubscriptionUsers(
+        subscriptionId
+      );
+
+      if (subscriptionItem.quantity! > subscriptionUsers.length) {
+        // There are unallocated seats for this subscription, add user
+        const price = subscriptionItem.price;
+        const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
+        const planKey = generatePlanKey(price.lookup_key, product.name);
+
+        await userSubRepository.createUserSubscription({
+          userId,
+          subscriptionId,
+          plan: planKey,
+          isOwner: false,
+        });
+      } else {
+        throw noAvailableSeats();
+      }
+    },
+
     async updatePlan(props) {
       const { userId, subscriptionId, newPriceId } = props;
 
@@ -180,9 +223,10 @@ export const createSubscriptionController = (
         );
 
         const product = newSubscriptionItem.price.product as Stripe.Product; // We can assert the type as we expand the product object
-        const newPlanKey =
-          newSubscriptionItem.price.lookup_key ||
-          product.name.toLowerCase().replaceAll(" ", "_");
+        const newPlanKey = generatePlanKey(
+          newSubscriptionItem.price.lookup_key,
+          product.name
+        );
 
         const newUserSub = await userSubRepository.createUserSubscription({
           userId,
@@ -215,12 +259,13 @@ export const createSubscriptionController = (
 
         if (newSeats === subscriptionSeats) return;
         else if (newSeats < subscriptionSeats) {
-          // Remove seats, check if there are available empty seats
-          const subscriptionUsers = await userSubRepository.getSubscriptionUsers(subscriptionId)
+          // Removing seats, check if there are available empty seats
+          const subscriptionUsers =
+            await userSubRepository.getSubscriptionUsers(subscriptionId);
 
-          if(newSeats <= subscriptionUsers.length) {
+          if (newSeats <= subscriptionUsers.length) {
             // No available seats to remove
-            throw noEmptySeatsToRemove()
+            throw noEmptySeatsToRemove();
           }
         }
 
@@ -233,7 +278,19 @@ export const createSubscriptionController = (
       }
     },
 
-    // TODO: Add logic to add/remove users from a subscription (IF SEAT BASED)
+    async removeUserFromSeat({ userId, subscriptionId }) {
+      const userSub = await userSubRepository
+        .getUserSubscriptions(userId)
+        .then(
+          (data) => data.filter((el) => el.subscriptionId === subscriptionId)[0]
+        );
+
+      if (!userSub.isOwner) {
+        userSubRepository.removeUserFromSubscription(userId, subscriptionId);
+      } else {
+        throw cantRemoveSubOwner();
+      }
+    },
 
     async cancelSubscription({ userId, subscriptionId }) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
