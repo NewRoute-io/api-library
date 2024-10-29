@@ -1,4 +1,5 @@
 import express from "express";
+import Stripe from "stripe";
 
 import { subscriptionValidator } from "@/schemaValidators/subscription.zod.js";
 
@@ -13,12 +14,16 @@ import { validateStripeSignature } from "@/modules/stripe-subscriptions/middlewa
 import { protectedRoute } from "@/modules/auth-basic/middleware/authBasic/jwt.js";
 import { response } from "@/modules/shared/utils/response.js";
 
+const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
+
+const stripe = new Stripe(STRIPE_API_KEY);
 const router = express.Router();
 
 const userRepository = createUserRepository();
 const userSubRepository = createUserSubRepository();
 
 const subscriptionController = createSubscriptionController(
+  stripe,
   userSubRepository,
   userRepository
 );

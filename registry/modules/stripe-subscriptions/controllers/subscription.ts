@@ -20,18 +20,15 @@ import {
   cantRemoveSubOwner
 } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
 
-const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
 const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL;
 const CHECKOUT_CANCEL_URL = process.env.CHECKOUT_CANCEL_URL;
-
-const stripe = new Stripe(STRIPE_API_KEY);
 
 type SubscriptionPrices = {
   currency: string;
   amount: number | null;
 };
 
-type Subscription = {
+export type Subscription = {
   plan: string;
   priceId: string;
   name: string;
@@ -73,6 +70,7 @@ interface SubscriptionController {
 }
 
 export const createSubscriptionController = (
+  stripe: Stripe,
   userSubRepository: UserSubscriptionRepository,
   userRepository: UserRepository
 ): SubscriptionController => {
@@ -144,7 +142,7 @@ export const createSubscriptionController = (
     async createCheckout({ userId, priceId, seats }) {
       const userSubscription = await userSubRepository
         .getUserSubscriptions(userId)
-        .then((res) => res.at(0));
+        .then((res) => res?.at(0));
 
       let customerData;
       if (userSubscription && userSubscription.customerId) {
@@ -263,7 +261,7 @@ export const createSubscriptionController = (
           const subscriptionUsers =
             await userSubRepository.getSubscriptionUsers(subscriptionId);
 
-          if (newSeats <= subscriptionUsers.length) {
+          if (newSeats < subscriptionUsers.length) {
             // No available seats to remove
             throw noEmptySeatsToRemove();
           }
