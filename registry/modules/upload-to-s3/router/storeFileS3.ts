@@ -14,11 +14,12 @@ const router = express.Router();
 
 router.post("/upload/:fileName", protectedRoute, async (req, res, next) => {
   const { fileName } = req.params;
+  const { userId } = req.user!;
 
   await storeFileValidator()
-    .validateGetFile({ fileName })
+    .validateGetFile({ fileName, userId })
     .then((val) =>
-      storeFileController.uploadFile({ req, fileName: val.fileName })
+      storeFileController.uploadFile({ req, fileName: val.fileName, userId })
     )
     .then((result) => res.json(response(result)))
     .catch(next);
@@ -28,9 +29,10 @@ router
   .route("/files")
   .get(protectedRoute, async (req, res, next) => {
     const pageToken = req.query.pageToken as string;
+    const { userId } = req.user!;
 
     await storeFileValidator()
-      .validateListFiles({ pageToken })
+      .validateListFiles({ pageToken, userId })
       .then(storeFileController.getFileList)
       .then((result) => res.json(response(result)))
       .catch(next);
@@ -49,9 +51,10 @@ router
   .route("/:fileKey")
   .get(protectedRoute, async (req, res, next) => {
     const fileName = req.params.fileKey;
+    const { userId } = req.user!;
 
     await storeFileValidator()
-      .validateGetFile({ fileName })
+      .validateGetFile({ fileName, userId })
       .then(storeFileController.downloadFile)
       .then((result) => {
         res.setHeader(
@@ -69,9 +72,10 @@ router
   })
   .delete(protectedRoute, async (req, res, next) => {
     const fileName = req.params.fileKey;
+    const { userId } = req.user!;
 
     await storeFileValidator()
-      .validateDeleteFiles({ files: [fileName] })
+      .validateDeleteFiles({ files: [fileName], userId })
       .then(storeFileController.deleteFiles)
       .then((result) => res.json(response(result)))
       .catch(next);
