@@ -24,7 +24,7 @@ export const createUserRepository = (): UserRepository => {
       throw notImplementedError(); // Remove when implemented
     },
 
-    async getUserById(userId: string): Promise<User | null> {
+    async getUserById(userId: number): Promise<User | null> {
       // REPLACE: Implement user retrieval by ID with your DB of choice
       throw notImplementedError(); // Remove when implemented
     },

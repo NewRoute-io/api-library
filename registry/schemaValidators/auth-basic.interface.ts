@@ -3,6 +3,13 @@ export type BasicAuthSchema = {
   password: string;
 };
 
+export type RefreshTokenSchema = {
+  token: string;
+};
+
 export interface BasicAuthValidator {
-  validate: (basicAuthSchema: BasicAuthSchema) => Promise<BasicAuthSchema>;
+  validateAuth: (basicAuthSchema: BasicAuthSchema) => Promise<BasicAuthSchema>;
+  validateRefreshToken: (
+    payload: RefreshTokenSchema
+  ) => Promise<RefreshTokenSchema>;
 }
