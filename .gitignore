@@ -133,6 +133,3 @@ dist
 templates/node-ts/pnpm-lock.yaml
 templates/node-ts/package-lock.json
 templates/node-ts/yarn.lock
-
-# Template env files
-!templates/node-ts/.env

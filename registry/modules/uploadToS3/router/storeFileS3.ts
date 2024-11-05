@@ -3,8 +3,8 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 import { storeFileValidator } from "@/schemaValidators/storeFile.zod.js";
 
-import { createStoreFileS3Controller } from "@/modules/upload-to-s3/controllers/storeFileS3.js";
-import { protectedRoute } from "@/modules/auth-basic/middleware/authBasic/jwt.js";
+import { createStoreFileS3Controller } from "@/modules/uploadToS3/controllers/storeFileS3.js";
+import { protectedRoute } from "@/modules/authBasic/middleware/authBasic/jwt.js";
 
 import { response } from "@/modules/shared/utils/response.js";
 

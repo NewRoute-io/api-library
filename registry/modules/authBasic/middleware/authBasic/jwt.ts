@@ -2,8 +2,8 @@ import { RequestHandler } from "express";
 
 import { createUserRepository } from "@/repositories/user.postgres.js";
 
-import { accessTokenManager } from "@/modules/auth-basic/utils/jwt/tokenManager.js";
-import { notAuthenticated, invalidAccessToken } from "@/modules/auth-basic/utils/errors/auth.js";
+import { accessTokenManager } from "@/modules/authBasic/utils/jwt/tokenManager.js";
+import { notAuthenticated, invalidAccessToken } from "@/modules/authBasic/utils/errors/auth.js";
 
 const userRepository = createUserRepository();
 

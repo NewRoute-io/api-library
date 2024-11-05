@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import { jwtEnvVariablesMissing } from "@/modules/auth-basic/utils/errors/auth.js";
+import { jwtEnvVariablesMissing } from "@/modules/authBasic/utils/errors/auth.js";
 
 /**
  * Example reading public/private keys from a "./keys" folder in rootDir

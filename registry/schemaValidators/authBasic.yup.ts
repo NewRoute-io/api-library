@@ -1,5 +1,5 @@
 import yup from "yup";
-import { BasicAuthValidator } from "./auth-basic.interface.js";
+import { BasicAuthValidator } from "./authBasic.interface.js";
 
 const basicAuthSchema = yup.object({
   username: yup.string().required(),

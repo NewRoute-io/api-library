@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import Stripe from "stripe";
 
-import { createSubscriptionController } from "@/modules/stripe-subscriptions/controllers/subscription.js";
+import { createSubscriptionController } from "@/modules/stripeSubscriptions/controllers/subscription.js";
 
 import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
 import { UserRepository } from "@/repositories/user.interface.js";
@@ -11,7 +11,7 @@ import {
   noAvailableSeats,
   noEmptySeatsToRemove,
   subscriptionNotFound,
-} from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
+} from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 // Mock Stripe instance
 vi.mock("stripe", () => {

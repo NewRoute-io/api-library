@@ -1,5 +1,5 @@
 import z from "zod";
-import { BasicAuthValidator } from "./auth-basic.interface.js";
+import { BasicAuthValidator } from "./authBasic.interface.js";
 
 const basicAuthSchema = z.object({
   username: z.string(),

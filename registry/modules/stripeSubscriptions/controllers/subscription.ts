@@ -21,7 +21,7 @@ import {
   noEmptySeatsToRemove,
   noAvailableSeats,
   cantRemoveSubOwner,
-} from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
+} from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL as string;
 const CHECKOUT_CANCEL_URL = process.env.CHECKOUT_CANCEL_URL as string;
@@ -123,7 +123,7 @@ export const createSubscriptionController = (
 
     async getUserSubs({ userId }) {
       const userSubs = await userSubRepository.getUserSubscriptions(userId);
-      let userSubscriptions: UserSubsOutput[] = [];
+      const userSubscriptions: UserSubsOutput[] = [];
 
       for (const sub of userSubs) {
         const subscription = await stripe.subscriptions.retrieve(
@@ -258,7 +258,7 @@ export const createSubscriptionController = (
         );
 
         // Update the plan for all users with this subscription ID
-        let updatedSubscriptions: UserSubscription[] = [];
+        const updatedSubscriptions: UserSubscription[] = [];
         for (const user of subscriptionUsers) {
           const userSub = await userSubRepository.createUserSubscription({
             userId: user.userId,
