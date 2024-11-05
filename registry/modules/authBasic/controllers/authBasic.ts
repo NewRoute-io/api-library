@@ -3,7 +3,7 @@ import argon from "argon2";
 import {
   BasicAuthSchema,
   RefreshTokenSchema,
-} from "@/schemaValidators/auth-basic.interface.js";
+} from "@/schemaValidators/authBasic.interface.js";
 
 import { accessTokenManager } from "@/modules/authBasic/utils/jwt/tokenManager.js";
 import {

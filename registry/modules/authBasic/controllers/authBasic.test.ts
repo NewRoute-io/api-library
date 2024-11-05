@@ -8,7 +8,7 @@ import {
   RefreshTokenRepository,
   RefreshToken,
 } from "@/repositories/refreshToken.interface.js";
-import { BasicAuthSchema } from "@/schemaValidators/auth-basic.interface.js";
+import { BasicAuthSchema } from "@/schemaValidators/authBasic.interface.js";
 
 import {
   usernameNotAvailable,
