@@ -1,0 +1,153 @@
+---
+title: Stripe Subscriptions
+description: Making Stripe subscriptions a piece of cake. Add subscription billing to your app within minutes
+features:
+  available:
+    - Checkout Sessions
+    - Payment Links
+    - List Available Subscription Plans
+    - Upsells at Checkout
+    - Plan Upgrades/Downgrades with Prorating
+    - Subscription Cancellation at End of Billing
+    - Seat-Based Subscriptions
+  comingSoon:
+    - Usage-Based Subscriptions
+    - Free Tiers
+postmanCollection: https://google.com
+---
+
+## About
+
+The Stripe Subscriptions API module provides a full-featured integration for subscription-based billing using Stripe, allowing developers to quickly monetize their apps without complex setup.
+It offloads the logic of managing products and prices to Stripe, keeping your database lightweight and minimizing data synchronization issues.
+
+## Installation
+
+To add the Stripe Subscriptions Module to your project, run:
+
+```bash
+npx create-backend-service add stripe-subscriptions
+```
+
+## .env
+
+Add the following environment variables to your `.env` file:
+
+- **STRIPE_API_KEY**: A server-side [Stripe API secret key](https://docs.stripe.com/keys)
+  - **Default**: None (required)
+  - **Example**: `STRIPE_API_KEY=sk_test_...`
+- **STRIPE_WH_SECRET**: Webhook endpoint secret from the Stripe Developer Dashboard
+  - **Default**: None (required)
+  - **Example**: `STRIPE_WH_SECRET=whsec_...`
+- **CHECKOUT_SUCCESS_URL**: Redirect URL after successful payment
+  - **Default**: None (required)
+  - **Example**: `CHECKOUT_SUCCESS_URL=https://yourdomain.com/payment-success`
+- **CHECKOUT_CANCEL_URL**: Redirect URL if payment is canceled
+  - **Default**: None (required)
+  - **Example**: `CHECKOUT_CANCEL_URL=https://yourdomain.com`
+
+## Dependencies
+
+The `auth-basic` module is required for user management and authentication and will be installed automatically with this module.
+
+## Usage
+
+To start using the module, import the `subscription` router in your entry file, such as `server.ts`:
+
+```typescript server.ts
+import subscription from "@/routes/subscription.js";
+app.use("/subscription", subscription);
+```
+
+This module leverages Stripe as the source of truth, storing minimal subscription data on your end:
+
+- **Customer ID**, **Subscription ID**, and **Plan Key** (`plan`).
+
+### Subscription Key (`plan`)
+
+The `plan` key is composed from the [Stripe price](https://docs.stripe.com/api/prices/object#price_object-lookup_key) `lookup_key`
+or the [Stripe product](https://docs.stripe.com/api/products/object#product_object-name) `name` in lowercase, e.g., `team_pro`,
+so checking if a user is subscribed can be as simple as `user.plan === 'team_pro'`.
+
+### Subscription Object
+
+The module simplifies Stripe’s API responses, returning only the relevant properties in a structured format:
+
+```json
+{
+  "plan": "team_pro",
+  "name": "Team Pro Plan",
+  "description": "Pro features for you and your whole team",
+  "priceId": "price_...",
+  "interval": "monthly",
+  "priceType": "per_unit",
+  "price": {
+    "currency": "USD",
+    "amount": 2000 // $20.00 represented as a whole intiger
+  },
+  "features": ["Unlimited API calls", "Team management", "Granular access"]
+}
+```
+
+### Seat-Based Subscriptions
+
+Seats can be configured during Stripe Checkout by adjusting the `quantity` property for the subscription. To disable this behaviour remove the `line_items.adjustable_quantity` property.
+
+```typescript {6}
+const checkout = await stripe.checkout.sessions.create({
+  ...customerData,
+  customer_creation: "always",
+  line_items: [
+    {
+      adjustable_quantity: { enabled: true },
+      quantity: seats,
+      price: priceId,
+    },
+  ],
+  subscription_data: { metadata: { userId } },
+  saved_payment_method_options: { payment_method_save: "enabled" },
+  success_url: CHECKOUT_SUCCESS_URL,
+  cancel_url: CHECKOUT_CANCEL_URL,
+  mode: "subscription",
+});
+```
+
+You can also manually set the number of seats by adding the `seats` property before creating a Stripe Checkout URL.
+
+### Endpoints
+
+The Stripe Subscriptions Module exposes the following endpoints:
+
+| Method | Endpoint                  | Description                                                                    |
+| ------ | ------------------------- | ------------------------------------------------------------------------------ |
+| POST   | `/`                       | Lists available subscriptions                                                  |
+| GET    | `/user`                   | Lists current subscriptions of the authenticated user                          |
+| GET    | `/payment/checkout`       | Generates a Stripe Checkout URL for user subscriptions                         |
+| GET    | `/payment/link`           | Generates a reusable Stripe Payment Link for user subscriptions                |
+| PATCH  | `/:subscriptionId`        | Upgrades/Downgrades subscription, prorates based on current billing period     |
+| POST   | `/:subscriptionId/seat`   | Adds a user to a seat in a seat-based subscription (Owner only)                |
+| DELETE | `/:subscriptionId/seat`   | Removes a user from a seat in a seat-based subscription (Owner only)           |
+| PATCH  | `/:subscriptionId/seat`   | Adjusts seat count (Owner only)                                                |
+| DELETE | `/:subscriptionId/cancel` | Cancels subscription at end of billing period, no future charges (Owner only)  |
+| POST   | `/:subscriptionId/cancel` | Stops pending cancellation, renews subscription at end of billing (Owner only) |
+
+### Errors
+
+Below are common errors with solutions for this module:
+
+| Error Code | Name                           | Solution                                                                               |
+| ---------- | ------------------------------ | -------------------------------------------------------------------------------------- |
+| 404        | SubscriptionNotFound           | Verify subscription ID and ensure it's an **active** subscription for the user         |
+| 409        | NoAvailableSeats               | Either increase seat count or remove a user to free up a seat                          |
+| 403        | NoEmptySeatsToRemove           | Ensure seat count matches or exceeds currently occupied seats                          |
+| 400        | CantRemoveSubOwner             | Subscription owner cannot be removed from seats, cancel subscription to stop billing   |
+| 400        | StripeWebhookEventNotSupported | Confirm correct Stripe webhook events are configured on the Stripe Developer Dashboard |
+
+### Examples
+
+To explore sample requests and responses, download our Postman collection:
+
+<PostmanBadge
+  collectionUrl="https://google.com"
+  moduleName="Stripe Subscriptions"
+/>

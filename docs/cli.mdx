@@ -1,0 +1,62 @@
+---
+title: The CLI
+description: Guide to using our CLI
+---
+
+Our CLI offers a quick, hassle-free way to set up a new project or install new API modules with a single command.
+
+While you’re welcome to copy source code directly from our GitHub repo, the CLI significantly simplifies the setup process by automating file placements, dependency resolutions, and configurations.
+
+The "raw" source code of API modules in GitHub may appear complex if copied directly. This setup is intentional for development purposes but can be confusing when integrating manually.
+
+Using the CLI ensures smooth installation by handling:
+- Copying files from the module registry
+- Installing schema validators and database repositories
+- Resolving internal and external dependencies
+- Adjusting `import` aliases in each file
+
+## init
+
+Use the `init` command to create a new project using our Node.js template or to add a `.config/modules.json` file to an existing project.
+
+```bash
+npx create-backend-service init
+```
+
+This command installs the template, sets up `package.json`, and configures the project based on your choices. For details on this process, refer to the [Installation Guide](/docs/install).
+
+### Options
+```txt
+Usage: create-backend-service init|i [options]
+
+Initialize project
+
+Options:
+  -c, --cwd <cwd>  The working directory. Defaults to the current directory.
+  -h, --help       Display help for the command
+```
+
+## add
+
+The `add` command allows you to add new API modules to your project. It checks if both `package.json` and `.config/modules.json` exist in the project directory. 
+If these files are missing, use the [init](#init) command first.
+
+```bash
+npx create-backend-service add <module>
+```
+
+This command installs all relevant files for the specified module, manages dependencies, and adjusts `import` statements as needed.
+
+### Options
+```txt
+Usage: create-backend-service add [options] [module...]
+
+Add an API module to your project
+
+Arguments:
+  module           The name of the module you want to add
+
+Options:
+  -c, --cwd <cwd>  The working directory. Defaults to the current directory.
+  -h, --help       Display help for the command
+```
