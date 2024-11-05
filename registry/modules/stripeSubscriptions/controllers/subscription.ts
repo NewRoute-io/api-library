@@ -123,7 +123,7 @@ export const createSubscriptionController = (
 
     async getUserSubs({ userId }) {
       const userSubs = await userSubRepository.getUserSubscriptions(userId);
-      let userSubscriptions: UserSubsOutput[] = [];
+      const userSubscriptions: UserSubsOutput[] = [];
 
       for (const sub of userSubs) {
         const subscription = await stripe.subscriptions.retrieve(
@@ -258,7 +258,7 @@ export const createSubscriptionController = (
         );
 
         // Update the plan for all users with this subscription ID
-        let updatedSubscriptions: UserSubscription[] = [];
+        const updatedSubscriptions: UserSubscription[] = [];
         for (const user of subscriptionUsers) {
           const userSub = await userSubRepository.createUserSubscription({
             userId: user.userId,
