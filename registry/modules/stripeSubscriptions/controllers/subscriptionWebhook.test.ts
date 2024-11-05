@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import Stripe from "stripe";
 
-import { createSubscriptionsWHController } from "@/modules/stripe-subscriptions/controllers/subscriptionWebhook.js";
+import { createSubscriptionsWHController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
 
 import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
 
-import { stripeWebhookEventNotSupported } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
+import { stripeWebhookEventNotSupported } from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 // Mock Stripe instance
 vi.mock("stripe", () => {

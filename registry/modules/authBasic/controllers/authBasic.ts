@@ -5,11 +5,11 @@ import {
   RefreshTokenSchema,
 } from "@/schemaValidators/auth-basic.interface.js";
 
-import { accessTokenManager } from "@/modules/auth-basic/utils/jwt/tokenManager.js";
+import { accessTokenManager } from "@/modules/authBasic/utils/jwt/tokenManager.js";
 import {
   usernameNotAvailable,
   invalidLoginCredentials,
-} from "@/modules/auth-basic/utils/errors/auth.js";
+} from "@/modules/authBasic/utils/errors/auth.js";
 import { forbiddenError } from "@/modules/shared/utils/errors/common.js";
 
 import { User, UserRepository } from "@/repositories/user.interface.js";

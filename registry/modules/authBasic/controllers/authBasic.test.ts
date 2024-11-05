@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import argon from "argon2";
 
-import { createAuthBasicController } from "@/modules/auth-basic/controllers/authBasic.js";
+import { createAuthBasicController } from "@/modules/authBasic/controllers/authBasic.js";
 
 import { UserRepository, User } from "@/repositories/user.interface.js";
 import {
@@ -13,7 +13,7 @@ import { BasicAuthSchema } from "@/schemaValidators/auth-basic.interface.js";
 import {
   usernameNotAvailable,
   invalidLoginCredentials,
-} from "@/modules/auth-basic/utils/errors/auth.js";
+} from "@/modules/authBasic/utils/errors/auth.js";
 import { forbiddenError } from "@/modules/shared/utils/errors/common.js";
 
 vi.mock("argon2");

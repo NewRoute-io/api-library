@@ -23,7 +23,7 @@ import {
   errorDownloadingS3File,
   s3FileNotFound,
   cantGetS3Files,
-} from "@/modules/upload-to-s3/utils/errors/storeFileS3.js";
+} from "@/modules/uploadToS3/utils/errors/storeFileS3.js";
 
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 

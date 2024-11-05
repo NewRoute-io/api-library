@@ -10,11 +10,11 @@ import {
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 
-import { createStoreFileS3Controller } from "@/modules/upload-to-s3/controllers/storeFileS3.js";
+import { createStoreFileS3Controller } from "@/modules/uploadToS3/controllers/storeFileS3.js";
 import {
   errorDownloadingS3File,
   cantGetS3Files,
-} from "@/modules/upload-to-s3/utils/errors/storeFileS3.js";
+} from "@/modules/uploadToS3/utils/errors/storeFileS3.js";
 
 const s3Mock = mockClient(S3Client);
 

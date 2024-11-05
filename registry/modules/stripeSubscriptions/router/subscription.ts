@@ -3,15 +3,15 @@ import Stripe from "stripe";
 
 import { subscriptionValidator } from "@/schemaValidators/subscription.zod.js";
 
-import { createSubscriptionController } from "@/modules/stripe-subscriptions/controllers/subscription.js";
-import { createSubscriptionsWHController } from "@/modules/stripe-subscriptions/controllers/subscriptionWebhook.js";
+import { createSubscriptionController } from "@/modules/stripeSubscriptions/controllers/subscription.js";
+import { createSubscriptionsWHController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
 
 import { createUserSubRepository } from "@/repositories/subscription.postgres.js";
 import { createUserRepository } from "@/repositories/user.postgres.js";
 
-import { validateStripeSignature } from "@/modules/stripe-subscriptions/middleware/subscriptions/stripeSignature.js";
+import { validateStripeSignature } from "@/modules/stripeSubscriptions/middleware/subscriptions/stripeSignature.js";
 
-import { protectedRoute } from "@/modules/auth-basic/middleware/authBasic/jwt.js";
+import { protectedRoute } from "@/modules/authBasic/middleware/authBasic/jwt.js";
 import { response } from "@/modules/shared/utils/response.js";
 
 const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;

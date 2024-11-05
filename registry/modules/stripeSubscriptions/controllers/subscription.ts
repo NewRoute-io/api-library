@@ -21,7 +21,7 @@ import {
   noEmptySeatsToRemove,
   noAvailableSeats,
   cantRemoveSubOwner,
-} from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
+} from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL as string;
 const CHECKOUT_CANCEL_URL = process.env.CHECKOUT_CANCEL_URL as string;

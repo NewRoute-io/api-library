@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import Stripe from "stripe";
 
-import { stripeWebhookValidationError } from "@/modules/stripe-subscriptions/utils/errors/subscriptions.js";
+import { stripeWebhookValidationError } from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 const STRIPE_API_KEY = process.env.STRIPE_API_KEY as string;
 const STRIPE_WH_SECRET = process.env.STRIPE_WH_SECRET as string;
