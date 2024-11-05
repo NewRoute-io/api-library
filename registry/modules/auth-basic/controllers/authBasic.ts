@@ -31,13 +31,13 @@ export const createAuthBasicController = (
   userRepo: UserRepository,
   refreshTokenRepo: RefreshTokenRepository
 ): AuthBasicController => {
-  const generateAccessToken = (userId: string) => {
-    const signedJWT = accessTokenManager.sign({ userId });
+  const generateAccessToken = (userId: number) => {
+    const signedJWT = accessTokenManager.sign({ userId: userId.toString() });
 
     return signedJWT;
   };
 
-  const generateRefreshToken = async (userId: string, tokenFamily?: string) => {
+  const generateRefreshToken = async (userId: number, tokenFamily?: string) => {
     const expAt = new Date(new Date().getTime() + 31 * 24 * 60 * 6000); // Expire in 31 days
     const refreshTokenExp = expAt.toISOString();
 
@@ -52,7 +52,7 @@ export const createAuthBasicController = (
 
   return {
     async signup(props) {
-      const { username, password } = props;
+      const { username, password, email } = props;
 
       await userRepo.getUser(username).then((res) => {
         if (res !== null) throw usernameNotAvailable();
@@ -68,6 +68,7 @@ export const createAuthBasicController = (
       const newUser = await userRepo.createAuthBasicUser({
         username,
         hashedPass,
+        email,
       });
 
       const refreshToken = await generateRefreshToken(newUser.userId);

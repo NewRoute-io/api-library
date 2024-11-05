@@ -5,7 +5,7 @@ export interface RefreshTokenRepository {
 }
 
 export type RefreshToken = {
-  userId: string;
+  userId: number;
   token: string;
   tokenFamily: string;
   active: boolean;
@@ -13,7 +13,7 @@ export type RefreshToken = {
 };
 
 export type CreateRefreshToken = {
-  userId: string;
+  userId: number;
   expiresAt: string;
   tokenFamily?: string;
 };

@@ -9,6 +9,7 @@ const basicAuthSchema = z.object({
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/\d/, "Password must contain at least one number"),
+  email: z.string().email().optional(),
 });
 
 const refreshTokenSchema = z.object({

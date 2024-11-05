@@ -8,7 +8,7 @@ export const createUserRepository = (): UserRepository => {
       const query: QueryConfig = {
         name: "queryGetUserByUsername",
         text: `
-          SELECT id, username, password, created_at
+          SELECT id, email, username, password, created_at
           FROM users 
           WHERE username = $1;
         `,
@@ -21,6 +21,7 @@ export const createUserRepository = (): UserRepository => {
           userId: result.id,
           username: result.username,
           password: result.password,
+          email: result.email,
           createdAt: result.created_at,
         };
       } else return null;
@@ -30,7 +31,7 @@ export const createUserRepository = (): UserRepository => {
       const query: QueryConfig = {
         name: "queryGetUserById",
         text: `
-          SELECT id, username, password, created_at
+          SELECT id, email, username, password, created_at
           FROM users 
           WHERE id = $1;
         `,
@@ -43,6 +44,7 @@ export const createUserRepository = (): UserRepository => {
           userId: result.id,
           username: result.username,
           password: result.password,
+          email: result.email,
           createdAt: result.created_at,
         };
       } else return null;
@@ -52,11 +54,11 @@ export const createUserRepository = (): UserRepository => {
       const query: QueryConfig = {
         name: "queryCreateAuthBasicUser",
         text: `
-          INSERT INTO users (username, password) 
-          VALUES ($1, $2) 
-          RETURNING id, username, password, created_at;
+          INSERT INTO users (username, password, email) 
+          VALUES ($1, $2, $3) 
+          RETURNING id, email, username, password, created_at;
         `,
-        values: [data.username, data.hashedPass],
+        values: [data.username, data.hashedPass, data.email],
       };
       const result = await pgPool.query(query).then((data) => data.rows.at(0));
 
@@ -64,6 +66,7 @@ export const createUserRepository = (): UserRepository => {
         userId: result.id,
         username: result.username,
         password: result.password,
+        email: result.email,
         createdAt: result.created_at,
       };
     },

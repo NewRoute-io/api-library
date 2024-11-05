@@ -29,6 +29,9 @@ importers:
       pg:
         specifier: ^8.13.0
         version: 8.13.0
+      stripe:
+        specifier: ^17.2.1
+        version: 17.2.1
       yup:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1605,6 +1608,10 @@ packages:
   strip-ansi@7.1.0:
     resolution: {integrity: sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==}
     engines: {node: '>=12'}
+
+  stripe@17.2.1:
+    resolution: {integrity: sha512-Mwb0SitV/UjxTLSUiTlUQ0VDE/gfyQ7OHDGdvDdvKIH4CNNqobPKlzlWhoZHFFU0OA/YsZyBtPULK4JG86BAAg==}
+    engines: {node: '>=12.*'}
 
   strnum@1.0.5:
     resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
@@ -3841,6 +3848,11 @@ snapshots:
   strip-ansi@7.1.0:
     dependencies:
       ansi-regex: 6.1.0
+
+  stripe@17.2.1:
+    dependencies:
+      '@types/node': 22.7.5
+      qs: 6.13.0
 
   strnum@1.0.5: {}
 
