@@ -325,7 +325,7 @@ export const createSubscriptionController = (
 
       if (userSub.isOwner) {
         if (userId !== removeUserId) {
-          userSubRepository.removeUserFromSubscription(
+          await userSubRepository.removeUserFromSubscription(
             removeUserId,
             subscriptionId
           );
