@@ -21,6 +21,7 @@ import {
   noEmptySeatsToRemove,
   noAvailableSeats,
   cantRemoveSubOwner,
+  notAuthorizedToModifySubscription,
 } from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL as string;
@@ -91,9 +92,7 @@ export const createSubscriptionController = (
         expand: ["data.product"],
       });
 
-      const subscriptions: Subscription[] = [];
-
-      stripePrices.data.forEach((price) => {
+      const subscriptions: Subscription[] = stripePrices.data.map((price) => {
         const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
         const { name, description, marketing_features } = product;
 
@@ -103,19 +102,19 @@ export const createSubscriptionController = (
           .filter((el) => el.name !== undefined)
           .map((el) => el.name!);
 
-        subscriptions.push({
+        return {
           plan: planKey,
           name,
           description,
           priceId: price.id,
-          interval: price.recurring!.interval,
+          interval: price.recurring!.interval, // To create a subscription price needs to have `recurring` property. That is why we can assert with `!`
           priceType: price.billing_scheme,
           price: {
             currency: price.currency,
             amount: price.unit_amount,
           },
           features: productFeatures,
-        });
+        };
       });
 
       return subscriptions;
@@ -123,23 +122,20 @@ export const createSubscriptionController = (
 
     async getUserSubs({ userId }) {
       const userSubs = await userSubRepository.getUserSubscriptions(userId);
-      const userSubscriptions: UserSubsOutput[] = [];
-
-      for (const sub of userSubs) {
-        const subscription = await stripe.subscriptions.retrieve(
-          sub.subscriptionId
-        );
-
+      const subscriptionPromises = userSubs.map(async (sub) => {
+        const subscription = await stripe.subscriptions.retrieve(sub.subscriptionId);
         const items = subscription.items.data[0];
-
-        userSubscriptions.push({
+    
+        return {
           plan: sub.plan,
           subscriptionId: sub.subscriptionId,
           isOwner: sub.isOwner,
           seats: items.quantity,
           createdAt: sub.createdAt,
-        });
-      }
+        };
+      });
+
+      const userSubscriptions: UserSubsOutput[] = await Promise.all(subscriptionPromises);
 
       return { userSubscriptions };
     },
@@ -149,18 +145,19 @@ export const createSubscriptionController = (
         .getUserSubscriptions(userId)
         .then((res) => res?.at(0));
 
-      let customerData;
+      let customer, customerEmail;
       if (userSubscription && userSubscription.customerId) {
         // Returning paying user, reuse existing Stripe Customer
-        customerData = { customer: userSubscription.customerId };
+        customer = userSubscription.customerId
       } else {
         // First time paying user, create Stripe Customer after Checkout with email
         const user = await userRepository.getUserById(userId);
-        customerData = { customer_email: user?.email };
+        customerEmail = user?.email
       }
 
       const checkout = await stripe.checkout.sessions.create({
-        ...customerData,
+        customer,
+        customer_email: customerEmail,
         customer_creation: "always",
         line_items: [
           {
@@ -233,9 +230,7 @@ export const createSubscriptionController = (
       }
     },
 
-    async updatePlan(props) {
-      const { userId, subscriptionId, newPriceId } = props;
-
+    async updatePlan({ userId, subscriptionId, newPriceId }) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       if (parseInt(subscription.metadata.userId) === userId) {
@@ -257,9 +252,8 @@ export const createSubscriptionController = (
           subscriptionId
         );
 
-        // Update the plan for all users with this subscription ID
-        const updatedSubscriptions: UserSubscription[] = [];
-        for (const user of subscriptionUsers) {
+        const userSubscriptionPromises = subscriptionUsers.map(async (user) => {
+          // Update the plan for all users with this subscription ID
           const userSub = await userSubRepository.createUserSubscription({
             userId: user.userId,
             subscriptionId: newSubscriptionItem.subscription,
@@ -267,8 +261,10 @@ export const createSubscriptionController = (
             customerId: user.customerId,
           });
 
-          updatedSubscriptions.push(userSub);
-        }
+          return userSub;
+        });
+
+        const updatedSubscriptions: UserSubscription[] = await Promise.all(userSubscriptionPromises);
 
         return {
           plan: newPlanKey,
@@ -278,13 +274,11 @@ export const createSubscriptionController = (
           createdAt: updatedSubscriptions[0].createdAt,
         };
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
 
-    async updateSeats(props) {
-      const { userId, subscriptionId, newSeats } = props;
-
+    async updateSeats({ userId, subscriptionId, newSeats }) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       if (parseInt(subscription.metadata.userId) === userId) {
@@ -309,7 +303,7 @@ export const createSubscriptionController = (
           quantity: newSeats,
         });
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
 
@@ -335,7 +329,7 @@ export const createSubscriptionController = (
           cancel_at_period_end: true,
         });
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
 
@@ -347,7 +341,7 @@ export const createSubscriptionController = (
           cancel_at_period_end: false,
         });
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
   };

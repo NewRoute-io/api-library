@@ -47,3 +47,11 @@ export const stripeWebhookEventNotSupported = (event: string) => {
     400
   );
 };
+
+export const notAuthorizedToModifySubscription = () => {
+  return new HttpError(
+    "NotAuthorizedToModifySubscription",
+    `User not authorized to modify this subscription. Only subscription owners can modify subscription details`,
+    401
+  );
+};

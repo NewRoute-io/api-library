@@ -19,18 +19,14 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
       };
       const result = await pgPool.query(query).then((data) => data.rows);
 
-      const subscriptions: UserSubscription[] = [];
-
-      result.forEach((el) =>
-        subscriptions.push({
-          plan: el.plan,
-          userId: el.user_id,
-          customerId: el.customer_id,
-          subscriptionId: el.subscription_id,
-          isOwner: el.is_owner,
-          createdAt: el.created_at,
-        })
-      );
+      const subscriptions: UserSubscription[] = result.map((el) => ({
+        plan: el.plan,
+        userId: el.user_id,
+        customerId: el.customer_id,
+        subscriptionId: el.subscription_id,
+        isOwner: el.is_owner,
+        createdAt: el.created_at,
+      }));
 
       return subscriptions;
     },
@@ -47,18 +43,14 @@ export const createUserSubRepository = (): UserSubscriptionRepository => {
       };
       const result = await pgPool.query(query).then((data) => data.rows);
 
-      const subscriptions: UserSubscription[] = [];
-
-      result.forEach((el) =>
-        subscriptions.push({
-          plan: el.plan,
-          userId: el.user_id,
-          customerId: el.customer_id,
-          subscriptionId: el.subscription_id,
-          isOwner: el.is_owner,
-          createdAt: el.created_at,
-        })
-      );
+      const subscriptions: UserSubscription[] = result.map((el) => ({
+        plan: el.plan,
+        userId: el.user_id,
+        customerId: el.customer_id,
+        subscriptionId: el.subscription_id,
+        isOwner: el.is_owner,
+        createdAt: el.created_at,
+      }));
 
       return subscriptions;
     },

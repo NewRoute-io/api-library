@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { subscriptionValidator } from "@/schemaValidators/subscription.zod.js";
 
 import { createSubscriptionController } from "@/modules/stripeSubscriptions/controllers/subscription.js";
-import { createSubscriptionsWHController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
+import { createSubscriptionsWebHookController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
 
 import { createUserSubRepository } from "@/repositories/subscription.postgres.js";
 import { createUserRepository } from "@/repositories/user.postgres.js";
@@ -27,7 +27,7 @@ const subscriptionController = createSubscriptionController(
   userSubRepository,
   userRepository
 );
-const subscriptionWHController = createSubscriptionsWHController(
+const subscriptionWHController = createSubscriptionsWebHookController(
   stripe,
   userSubRepository
 );
@@ -150,7 +150,7 @@ router.get("/payment/link", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-router.post("webhook", validateStripeSignature, async (req, res, next) => {
+router.post("/webhook", validateStripeSignature, async (req, res, next) => {
   try {
     const eventPayload = req.stripeEvent!;
 

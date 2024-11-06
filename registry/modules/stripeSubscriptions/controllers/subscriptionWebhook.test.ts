@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import Stripe from "stripe";
 
-import { createSubscriptionsWHController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
+import { createSubscriptionsWebHookController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
 
 import { UserSubscriptionRepository } from "@/repositories/subscription.interface.js";
 
@@ -22,7 +22,7 @@ const stripe = new Stripe("");
 
 describe("stripe-subscriptions API Module tests", () => {
   describe("Subscription Webhook Tests", () => {
-    let controller: ReturnType<typeof createSubscriptionsWHController>;
+    let controller: ReturnType<typeof createSubscriptionsWebHookController>;
     let subscriptionRepoMock: Partial<UserSubscriptionRepository>;
 
     const mockUserId = 123;
@@ -46,7 +46,7 @@ describe("stripe-subscriptions API Module tests", () => {
       };
 
       // Injecting the mocked repositories into the controller
-      controller = createSubscriptionsWHController(
+      controller = createSubscriptionsWebHookController(
         stripe,
         subscriptionRepoMock as UserSubscriptionRepository
       );
