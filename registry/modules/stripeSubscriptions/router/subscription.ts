@@ -69,9 +69,11 @@ router
   .post(protectedRoute, async (req, res, next) => {
     const user = req.user!;
     const { subscriptionId } = req.params;
+    const payload = req.body;
 
     await subscriptionValidator()
       .validateAddUserToSeat({
+        ...payload,
         userId: user.userId,
         subscriptionId,
       })
@@ -82,9 +84,11 @@ router
   .delete(protectedRoute, async (req, res, next) => {
     const user = req.user!;
     const { subscriptionId } = req.params;
+    const payload = req.body;
 
     await subscriptionValidator()
       .validateRemoveUserFromSeat({
+        ...payload,
         userId: user.userId,
         subscriptionId,
       })

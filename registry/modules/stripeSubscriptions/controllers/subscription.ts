@@ -17,7 +17,6 @@ import {
 import { UserRepository } from "@/repositories/user.interface.js";
 
 import {
-  subscriptionNotFound,
   noEmptySeatsToRemove,
   noAvailableSeats,
   cantRemoveSubOwner,
@@ -123,9 +122,11 @@ export const createSubscriptionController = (
     async getUserSubs({ userId }) {
       const userSubs = await userSubRepository.getUserSubscriptions(userId);
       const subscriptionPromises = userSubs.map(async (sub) => {
-        const subscription = await stripe.subscriptions.retrieve(sub.subscriptionId);
+        const subscription = await stripe.subscriptions.retrieve(
+          sub.subscriptionId
+        );
         const items = subscription.items.data[0];
-    
+
         return {
           plan: sub.plan,
           subscriptionId: sub.subscriptionId,
@@ -135,7 +136,9 @@ export const createSubscriptionController = (
         };
       });
 
-      const userSubscriptions: UserSubsOutput[] = await Promise.all(subscriptionPromises);
+      const userSubscriptions: UserSubsOutput[] = await Promise.all(
+        subscriptionPromises
+      );
 
       return { userSubscriptions };
     },
@@ -148,11 +151,11 @@ export const createSubscriptionController = (
       let customer, customerEmail;
       if (userSubscription && userSubscription.customerId) {
         // Returning paying user, reuse existing Stripe Customer
-        customer = userSubscription.customerId
+        customer = userSubscription.customerId;
       } else {
         // First time paying user, create Stripe Customer after Checkout with email
         const user = await userRepository.getUserById(userId);
-        customerEmail = user?.email
+        customerEmail = user?.email;
       }
 
       const checkout = await stripe.checkout.sessions.create({
@@ -198,35 +201,39 @@ export const createSubscriptionController = (
       return { url: paymentLink.url };
     },
 
-    async addUserToSeat({ userId, subscriptionId }) {
-      const subscriptionItem = await stripe.subscriptions
-        .retrieve(subscriptionId, {
-          expand: ["data.items.data.price.product"],
-        })
-        .then((data) => data.items.data[0]);
+    async addUserToSeat({ userId, subscriptionId, addUserId }) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ["items.data.price.product"],
+      });
+
+      const subscriptionItem = subscription.items.data[0];
 
       if (subscriptionItem.quantity === 1) {
         throw noAvailableSeats();
       }
 
-      const subscriptionUsers = await userSubRepository.getSubscriptionUsers(
-        subscriptionId
-      );
+      if (parseInt(subscription.metadata.userId) === userId) {
+        const subscriptionUsers = await userSubRepository.getSubscriptionUsers(
+          subscriptionId
+        );
 
-      if (subscriptionItem.quantity! > subscriptionUsers.length) {
-        // There are unallocated seats for this subscription, add user
-        const price = subscriptionItem.price;
-        const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
-        const planKey = generatePlanKey(price.lookup_key, product.name);
+        if (subscriptionItem.quantity! > subscriptionUsers.length) {
+          // There are unallocated seats for this subscription, add user
+          const price = subscriptionItem.price;
+          const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
+          const planKey = generatePlanKey(price.lookup_key, product.name);
 
-        await userSubRepository.createUserSubscription({
-          userId,
-          subscriptionId,
-          plan: planKey,
-          isOwner: false,
-        });
+          await userSubRepository.createUserSubscription({
+            userId: addUserId,
+            subscriptionId,
+            plan: planKey,
+            isOwner: false,
+          });
+        } else {
+          throw noAvailableSeats();
+        }
       } else {
-        throw noAvailableSeats();
+        throw notAuthorizedToModifySubscription();
       }
     },
 
@@ -264,7 +271,9 @@ export const createSubscriptionController = (
           return userSub;
         });
 
-        const updatedSubscriptions: UserSubscription[] = await Promise.all(userSubscriptionPromises);
+        const updatedSubscriptions: UserSubscription[] = await Promise.all(
+          userSubscriptionPromises
+        );
 
         return {
           plan: newPlanKey,
@@ -307,17 +316,24 @@ export const createSubscriptionController = (
       }
     },
 
-    async removeUserFromSeat({ userId, subscriptionId }) {
+    async removeUserFromSeat({ userId, subscriptionId, removeUserId }) {
       const userSub = await userSubRepository
         .getUserSubscriptions(userId)
         .then(
           (data) => data.filter((el) => el.subscriptionId === subscriptionId)[0]
         );
 
-      if (!userSub.isOwner) {
-        userSubRepository.removeUserFromSubscription(userId, subscriptionId);
+      if (userSub.isOwner) {
+        if (userId !== removeUserId) {
+          userSubRepository.removeUserFromSubscription(
+            removeUserId,
+            subscriptionId
+          );
+        } else {
+          throw cantRemoveSubOwner();
+        }
       } else {
-        throw cantRemoveSubOwner();
+        throw notAuthorizedToModifySubscription();
       }
     },
 
