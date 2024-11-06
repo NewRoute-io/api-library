@@ -3,21 +3,48 @@ import { ServerClient, TemplatedMessage } from "postmark";
 import { UserRepository } from "@/repositories/user.interface.js";
 
 import {
-  SendEmail,
-  SendBulkEmails,
-} from "@/schemaValidators/email.interface.js";
+  emailNotFound,
+  postmarkSendError,
+} from "@/modules/postmarkEmail/utils/errors/email.js";
 
-// NOTE: Update "from email"
+const POSTMARK__SERVER_TOKEN = process.env.POSTMARK__SERVER_TOKEN as string;
+const pmClient = new ServerClient(POSTMARK__SERVER_TOKEN);
+
+// NOTE: Replace with your email address
 const FROM_EMAIL = "no-reply@sender.com";
 
+/**
+ * If you wish to have different payload for each receiver use this type:
+ *
+ * ```
+ * type SendBulkEmails<T> = {
+ *  templateName: string;
+ *  payload: Omit<SendEmail<T>, "templateName">[];
+ * };
+ * ```
+ *
+ * **NOTE**: You will need to modify the controller logic to process the `payload` array correctly
+ */
+type SendBulkEmails<T> = {
+  receiverIds: number[];
+  templateName: string;
+  payload: T;
+};
+
+type SendEmail<T> = {
+  receiverId: number;
+  templateName: string;
+  payload: T;
+};
+
 interface EmailController {
-  sendEmail: (props: SendEmail) => void;
-  sendBulkEmails: (props: SendBulkEmails) => void;
+  sendEmail: <T extends object>(props: SendEmail<T>) => void;
+  sendBulkEmails: <T extends object>(props: SendBulkEmails<T>) => void;
 }
 
 export const createEmailController = (
-  pm: ServerClient,
-  userRepository: UserRepository
+  userRepository: UserRepository,
+  pm: ServerClient = pmClient
 ): EmailController => {
   return {
     async sendEmail({ receiverId, templateName, payload }) {
@@ -33,24 +60,29 @@ export const createEmailController = (
         };
 
         await pm.sendEmailWithTemplate(message).catch((err) => {
-          // TODO: throw error that there was a problem with postmark
+          throw postmarkSendError(err?.message);
         });
       } else {
-        // TODO: Email missing error
+        throw emailNotFound();
       }
     },
 
     async sendBulkEmails({ receiverIds, templateName, payload }) {
-      // TODO: Add pagination as postmark supports max 500 emails per batch
-      const usersPromises = receiverIds.map(async (id) => {
-        return await userRepository.getUserById(id);
-      });
-
+      const usersPromises = receiverIds.map((id) => userRepository.getUserById(id));
       const users = await Promise.all(usersPromises);
 
-      const messages: TemplatedMessage[] = users
-        .filter((el) => el && el.email) // Ignore users who don't have an email so we don't interrupt bulk send
-        .map((user) => {
+      // Ignore users who don't have an email so we don't interrupt the bulk send
+      const usersWithEmail = users.filter((user) => user?.email);
+
+      // Paginate users as postmark supports max 500 emails per batch
+      const userChunks = [];
+      for (let i = 0; i < usersWithEmail.length; i += 500) {
+        const chunk = usersWithEmail.slice(i, i + 500);
+        userChunks.push(chunk);
+      }
+
+      const bulkSendPromises = userChunks.map(async (userChunk) => {
+        const messages: TemplatedMessage[] = userChunk.map((user) => {
           return {
             From: FROM_EMAIL,
             To: user!.email,
@@ -60,9 +92,12 @@ export const createEmailController = (
           };
         });
 
-      await pm.sendEmailBatchWithTemplates(messages).catch((err) => {
-        // TODO: throw error that there was a problem with postmark
+        await pm.sendEmailBatchWithTemplates(messages).catch((err) => {
+          throw postmarkSendError(err?.message);
+        });
       });
+
+      await Promise.all(bulkSendPromises);
     },
   };
 };
