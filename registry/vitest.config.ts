@@ -15,6 +15,7 @@ export default defineConfig({
         "repositories/*",
         "schemaValidators/*",
         "./**/router/*",
+        "./**/middleware/*",
         "**/errors/*"
       ],
     },
