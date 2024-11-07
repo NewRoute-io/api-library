@@ -129,7 +129,7 @@ describe("postmark-email API Module tests", () => {
       ]);
     });
 
-    it("should silently ignore users with no email and send bul emails", async () => {
+    it("should silently ignore users with no email and send bulk emails", async () => {
       const mockNoEmailUser = { id: 987 };
       const mockReceivers = [...mockUsers, mockNoEmailUser].map((el) => el.id);
 
