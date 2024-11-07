@@ -7,8 +7,8 @@ import {
   postmarkSendError,
 } from "@/modules/postmarkEmail/utils/errors/email.js";
 
-const POSTMARK__SERVER_TOKEN = process.env.POSTMARK__SERVER_TOKEN as string;
-const pmClient = new ServerClient(POSTMARK__SERVER_TOKEN);
+const POSTMARK_SERVER_TOKEN = process.env.POSTMARK_SERVER_TOKEN as string;
+const pmClient = new ServerClient(POSTMARK_SERVER_TOKEN);
 
 // NOTE: Replace with your email address
 const FROM_EMAIL = "no-reply@sender.com";

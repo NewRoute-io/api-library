@@ -1,4 +1,4 @@
-# NewRoute API Module Library
+# Vratix API Module Library
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 ![GitHub License](https://img.shields.io/github/license/NewRoute-io/api-library)
 
@@ -46,7 +46,7 @@ Use the `init` command to create a new Node.js project or configure an existing 
 Add the `-c` flag to specify a custom folder, or the CLI will set up the project in the current directory:
 
 ```bash
-npx create-backend-service init
+npx vratix init
 ```
 
 ### Configure Your Project
@@ -100,5 +100,5 @@ to start your service.
 To add additional modules later, simply use:
 
 ```bash
-npx create-backend-service add auth-basic
+npx vratix add auth-basic
 ```

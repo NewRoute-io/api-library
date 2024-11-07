@@ -18,7 +18,7 @@ This module requires an existing AWS account and aims to facilitate seamless int
 To add the S3 File Storage Module to your project, run:
 
 ```bash
-npx create-backend-service add upload-to-s3
+npx vratix add upload-to-s3
 ```
 
 ## .env
@@ -38,11 +38,12 @@ This module will install the `auth-basic` API module for user authentication and
 
 ## Usage
 
-To use this module, import the `storeFileS3` router from `@/routes/storeFileS3.js` into your entry point file (e.g., `server.ts`):
+To use this module, import the router from `@/routes/storeFileS3.js` into your entry point file (e.g., `server.ts`):
 
 ```typescript server.ts
-import storeFileS3 from "@/routes/storeFileS3.js";
-app.use("/store-file", storeFileS3);
+import { router as storeFileRouter } from "@/routes/storeFileS3.js";
+
+app.use("/store-file", storeFileRouter);
 ```
 
 ### File Uploads

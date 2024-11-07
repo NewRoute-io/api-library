@@ -26,7 +26,7 @@ It offloads the logic of managing products and prices to Stripe, keeping your da
 To add the Stripe Subscriptions Module to your project, run:
 
 ```bash
-npx create-backend-service add stripe-subscriptions
+npx vratix add stripe-subscriptions
 ```
 
 ## .env
@@ -52,11 +52,12 @@ The `auth-basic` module is required for user management and authentication and w
 
 ## Usage
 
-To start using the module, import the `subscription` router in your entry file, such as `server.ts`:
+To start using the module, import the router in your entry file, such as `server.ts`:
 
 ```typescript server.ts
-import subscription from "@/routes/subscription.js";
-app.use("/subscription", subscription);
+import { router as subscriptionRouter } from "@/routes/subscription.js";
+
+app.use("/subscription", subscriptionRouter);
 ```
 
 This module leverages Stripe as the source of truth, storing minimal subscription data on your end:
