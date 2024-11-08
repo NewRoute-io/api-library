@@ -21,8 +21,7 @@ export const protectedRoute: RequestHandler = async (req, _, next) => {
     return next(notAuthenticated);
   }
 
-  const scheme = "bearer ";
-  const accessToken = authHeader.replace(scheme, "");
+  const accessToken = authHeader.replace(new RegExp("\\b[Bb]earer\\s"), "");
 
   try {
     const { userId } = accessTokenManager.validate(accessToken);

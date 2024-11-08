@@ -38,7 +38,7 @@ export const createAuthBasicController = (
   };
 
   const generateRefreshToken = async (userId: number, tokenFamily?: string) => {
-    const expAt = new Date(new Date().getTime() + 31 * 24 * 60 * 6000); // Expire in 31 days
+    const expAt = new Date(new Date().getTime() + 31 * 24 * 60 * 60000); // Expire in 31 days
     const refreshTokenExp = expAt.toISOString();
 
     const token = await refreshTokenRepo.createToken({

@@ -7,7 +7,7 @@ const getUserSubsSchema = yup.object({
 
 const createCheckoutSchema = getUserSubsSchema.shape({
   priceId: yup.string().required(),
-  seats: yup.number().min(0).default(1).required(),
+  seats: yup.number().min(1).default(1),
 });
 
 const updatePlanSchema = getUserSubsSchema.shape({

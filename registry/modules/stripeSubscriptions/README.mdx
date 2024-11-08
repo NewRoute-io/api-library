@@ -122,8 +122,8 @@ The Stripe Subscriptions Module exposes the following endpoints:
 | ------ | ------------------------- | ------------------------------------------------------------------------------ |
 | POST   | `/`                       | Lists available subscriptions                                                  |
 | GET    | `/user`                   | Lists current subscriptions of the authenticated user                          |
-| GET    | `/payment/checkout`       | Generates a Stripe Checkout URL for user subscriptions                         |
-| GET    | `/payment/link`           | Generates a reusable Stripe Payment Link for user subscriptions                |
+| POST   | `/payment/checkout`       | Generates a Stripe Checkout URL for user subscriptions                         |
+| POST   | `/payment/link`           | Generates a reusable Stripe Payment Link for user subscriptions                |
 | PATCH  | `/:subscriptionId`        | Upgrades/Downgrades subscription, prorates based on current billing period     |
 | POST   | `/:subscriptionId/seat`   | Adds a user to a seat in a seat-based subscription (Owner only)                |
 | DELETE | `/:subscriptionId/seat`   | Removes a user from a seat in a seat-based subscription (Owner only)           |

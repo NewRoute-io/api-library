@@ -12,7 +12,20 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+declare module "http" {
+  interface IncomingMessage {
+    rawBody: string;
+  }
+}
+
+app.use(
+  express.json({
+    verify: (req, _, buf) => {
+      // Provide access to the request raw body
+      req.rawBody = buf.toString();
+    },
+  })
+);
 app.use(express.urlencoded({ extended: false }));
 
 /*------------- Security Config -------------*/

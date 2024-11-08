@@ -7,7 +7,7 @@ const getUserSubsSchema = z.object({
 
 const createCheckoutSchema = getUserSubsSchema.extend({
   priceId: z.string(),
-  seats: z.number().min(0).default(1),
+  seats: z.number().min(1).default(1).optional(),
 });
 
 const updatePlanSchema = getUserSubsSchema.extend({

@@ -126,7 +126,7 @@ router
       .catch(next);
   });
 
-router.get("/payment/checkout", protectedRoute, async (req, res, next) => {
+router.post("/payment/checkout", protectedRoute, async (req, res, next) => {
   const user = req.user!;
   const payload = req.body;
 
@@ -140,7 +140,7 @@ router.get("/payment/checkout", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-router.get("/payment/link", protectedRoute, async (req, res, next) => {
+router.post("/payment/link", protectedRoute, async (req, res, next) => {
   const user = req.user!;
   const payload = req.body;
 

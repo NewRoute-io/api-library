@@ -161,11 +161,10 @@ export const createSubscriptionController = (
       const checkout = await stripe.checkout.sessions.create({
         customer,
         customer_email: customerEmail,
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true }, // Remove this line if your subscription is not per seat based
-            quantity: seats,
+            quantity: seats || 1,
             price: priceId,
           },
         ],
@@ -181,11 +180,10 @@ export const createSubscriptionController = (
 
     async createPaymentLink({ userId, priceId, seats }) {
       const paymentLink = await stripe.paymentLinks.create({
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true }, // Remove this line if your subscription is not per seat based
-            quantity: seats,
+            quantity: seats || 1,
             price: priceId,
           },
         ],

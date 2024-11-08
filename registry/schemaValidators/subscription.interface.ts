@@ -5,7 +5,7 @@ export type GetUserSubsSchema = {
 export type CreateCheckoutSchema = {
   userId: number;
   priceId: string;
-  seats: number;
+  seats?: number;
 };
 
 export type CreatePaymentLinkSchema = CreateCheckoutSchema;
