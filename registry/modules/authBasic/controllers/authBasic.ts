@@ -19,7 +19,7 @@ import {
 } from "@/repositories/refreshToken.interface.js";
 
 interface TokensOutput { accessToken: string; refreshToken: RefreshToken };
-interface AuthOutput extends TokensOutput  {user: User}
+interface AuthOutput extends TokensOutput  {user: Omit<User, 'password'>}
 
 interface AuthBasicController {
   login: (props: BasicAuthSchema) => Promise<AuthOutput>
@@ -74,7 +74,9 @@ export const createAuthBasicController = (
       const refreshToken = await generateRefreshToken(newUser.userId);
       const accessToken = generateAccessToken(newUser.userId);
 
-      return { user: newUser, accessToken, refreshToken };
+      const { password: _, ...userRes } = newUser;
+
+      return { user: userRes, accessToken, refreshToken };
     },
     
     async login(props) {
@@ -92,7 +94,9 @@ export const createAuthBasicController = (
         const refreshToken = await generateRefreshToken(user.userId);
         const accessToken = generateAccessToken(user.userId);
 
-        return { user, accessToken, refreshToken };
+        const { password: _, ...userRes } = user;
+
+        return { user: userRes, accessToken, refreshToken };
       }
 
       throw invalidLoginCredentials();

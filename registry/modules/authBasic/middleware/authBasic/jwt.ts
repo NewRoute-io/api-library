@@ -18,7 +18,7 @@ export const protectedRoute: RequestHandler = async (req, _, next) => {
   const authHeader = req.header("authorization");
 
   if (!authHeader) {
-    return next(notAuthenticated);
+    return next(notAuthenticated());
   }
 
   const accessToken = authHeader.replace(new RegExp("\\b[Bb]earer\\s"), "");
@@ -31,9 +31,9 @@ export const protectedRoute: RequestHandler = async (req, _, next) => {
       req.user = user;
       next();
     } else {
-      next(invalidAccessToken);
+      next(invalidAccessToken());
     }
   } catch (err) {
-    next(err);
+    next(invalidAccessToken());
   }
 };
