@@ -96,11 +96,10 @@ Seats can be configured during Stripe Checkout by adjusting the `quantity` prope
 ```typescript {6}
 const checkout = await stripe.checkout.sessions.create({
   ...customerData,
-  customer_creation: "always",
   line_items: [
     {
       adjustable_quantity: { enabled: true },
-      quantity: seats,
+      quantity: seats || 1,
       price: priceId,
     },
   ],

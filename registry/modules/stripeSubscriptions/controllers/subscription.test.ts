@@ -164,7 +164,6 @@ describe("stripe-subscriptions API Module tests", () => {
 
       expect(stripe.checkout.sessions.create).toHaveBeenCalledWith({
         customer: mockUserSub.customerId,
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true },
@@ -201,7 +200,6 @@ describe("stripe-subscriptions API Module tests", () => {
 
       expect(stripe.checkout.sessions.create).toHaveBeenCalledWith({
         customer_email: mockUser.email,
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true },
@@ -231,7 +229,6 @@ describe("stripe-subscriptions API Module tests", () => {
       });
 
       expect(stripe.paymentLinks.create).toHaveBeenCalledWith({
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true },
