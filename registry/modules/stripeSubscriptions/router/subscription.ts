@@ -182,4 +182,4 @@ router.patch("/:subscriptionId", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-export { router };
+export { router as subscriptionRouter };
