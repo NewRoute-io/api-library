@@ -49,7 +49,6 @@ interface StoreFileS3Controller {
 export const createStoreFileS3Controller = (
   s3Client: S3Client
 ): StoreFileS3Controller => {
-
   const generateFileName = (userId: number, name: string) => {
     return `owner:${userId}_name:${name}`;
   };
@@ -101,7 +100,7 @@ export const createStoreFileS3Controller = (
       return data;
     },
 
-    async getFileList({ pageToken }) {
+    async getFileList({ pageToken, userId }) {
       const list = await s3Client
         .send(
           new ListObjectsV2Command({
@@ -113,7 +112,14 @@ export const createStoreFileS3Controller = (
           throw cantGetS3Files();
         });
 
-      const fileNames: FileOutput[] = [];
+      const fileNames: FileOutput[] =
+        list.Contents?.filter((file) =>
+          file.Key?.includes(`owner:${userId}`)
+        ).map((file) => ({
+          name: file.Key!.split("name:")[1],
+          size: file.Size,
+          modified: file.LastModified,
+        })) || [];
 
       list.Contents?.forEach((file) => {
         if (file.Key) {

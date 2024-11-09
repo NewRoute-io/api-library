@@ -17,10 +17,10 @@ import {
 import { UserRepository } from "@/repositories/user.interface.js";
 
 import {
-  subscriptionNotFound,
   noEmptySeatsToRemove,
   noAvailableSeats,
   cantRemoveSubOwner,
+  notAuthorizedToModifySubscription,
 } from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 const CHECKOUT_SUCCESS_URL = process.env.CHECKOUT_SUCCESS_URL as string;
@@ -91,9 +91,7 @@ export const createSubscriptionController = (
         expand: ["data.product"],
       });
 
-      const subscriptions: Subscription[] = [];
-
-      stripePrices.data.forEach((price) => {
+      const subscriptions: Subscription[] = stripePrices.data.map((price) => {
         const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
         const { name, description, marketing_features } = product;
 
@@ -103,19 +101,19 @@ export const createSubscriptionController = (
           .filter((el) => el.name !== undefined)
           .map((el) => el.name!);
 
-        subscriptions.push({
+        return {
           plan: planKey,
           name,
           description,
           priceId: price.id,
-          interval: price.recurring!.interval,
+          interval: price.recurring!.interval, // To create a subscription price needs to have `recurring` property. That is why we can assert with `!`
           priceType: price.billing_scheme,
           price: {
             currency: price.currency,
             amount: price.unit_amount,
           },
           features: productFeatures,
-        });
+        };
       });
 
       return subscriptions;
@@ -123,23 +121,24 @@ export const createSubscriptionController = (
 
     async getUserSubs({ userId }) {
       const userSubs = await userSubRepository.getUserSubscriptions(userId);
-      const userSubscriptions: UserSubsOutput[] = [];
-
-      for (const sub of userSubs) {
+      const subscriptionPromises = userSubs.map(async (sub) => {
         const subscription = await stripe.subscriptions.retrieve(
           sub.subscriptionId
         );
-
         const items = subscription.items.data[0];
 
-        userSubscriptions.push({
+        return {
           plan: sub.plan,
           subscriptionId: sub.subscriptionId,
           isOwner: sub.isOwner,
           seats: items.quantity,
           createdAt: sub.createdAt,
-        });
-      }
+        };
+      });
+
+      const userSubscriptions: UserSubsOutput[] = await Promise.all(
+        subscriptionPromises
+      );
 
       return { userSubscriptions };
     },
@@ -149,23 +148,23 @@ export const createSubscriptionController = (
         .getUserSubscriptions(userId)
         .then((res) => res?.at(0));
 
-      let customerData;
+      let customer, customerEmail;
       if (userSubscription && userSubscription.customerId) {
         // Returning paying user, reuse existing Stripe Customer
-        customerData = { customer: userSubscription.customerId };
+        customer = userSubscription.customerId;
       } else {
         // First time paying user, create Stripe Customer after Checkout with email
         const user = await userRepository.getUserById(userId);
-        customerData = { customer_email: user?.email };
+        customerEmail = user?.email;
       }
 
       const checkout = await stripe.checkout.sessions.create({
-        ...customerData,
-        customer_creation: "always",
+        customer,
+        customer_email: customerEmail,
         line_items: [
           {
             adjustable_quantity: { enabled: true }, // Remove this line if your subscription is not per seat based
-            quantity: seats,
+            quantity: seats || 1,
             price: priceId,
           },
         ],
@@ -181,11 +180,10 @@ export const createSubscriptionController = (
 
     async createPaymentLink({ userId, priceId, seats }) {
       const paymentLink = await stripe.paymentLinks.create({
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true }, // Remove this line if your subscription is not per seat based
-            quantity: seats,
+            quantity: seats || 1,
             price: priceId,
           },
         ],
@@ -201,41 +199,43 @@ export const createSubscriptionController = (
       return { url: paymentLink.url };
     },
 
-    async addUserToSeat({ userId, subscriptionId }) {
-      const subscriptionItem = await stripe.subscriptions
-        .retrieve(subscriptionId, {
-          expand: ["data.items.data.price.product"],
-        })
-        .then((data) => data.items.data[0]);
+    async addUserToSeat({ userId, subscriptionId, addUserId }) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ["items.data.price.product"],
+      });
+
+      const subscriptionItem = subscription.items.data[0];
 
       if (subscriptionItem.quantity === 1) {
         throw noAvailableSeats();
       }
 
-      const subscriptionUsers = await userSubRepository.getSubscriptionUsers(
-        subscriptionId
-      );
+      if (parseInt(subscription.metadata.userId) === userId) {
+        const subscriptionUsers = await userSubRepository.getSubscriptionUsers(
+          subscriptionId
+        );
 
-      if (subscriptionItem.quantity! > subscriptionUsers.length) {
-        // There are unallocated seats for this subscription, add user
-        const price = subscriptionItem.price;
-        const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
-        const planKey = generatePlanKey(price.lookup_key, product.name);
+        if (subscriptionItem.quantity! > subscriptionUsers.length) {
+          // There are unallocated seats for this subscription, add user
+          const price = subscriptionItem.price;
+          const product = price.product as Stripe.Product; // We can assert the type as we expand the product object
+          const planKey = generatePlanKey(price.lookup_key, product.name);
 
-        await userSubRepository.createUserSubscription({
-          userId,
-          subscriptionId,
-          plan: planKey,
-          isOwner: false,
-        });
+          await userSubRepository.createUserSubscription({
+            userId: addUserId,
+            subscriptionId,
+            plan: planKey,
+            isOwner: false,
+          });
+        } else {
+          throw noAvailableSeats();
+        }
       } else {
-        throw noAvailableSeats();
+        throw notAuthorizedToModifySubscription();
       }
     },
 
-    async updatePlan(props) {
-      const { userId, subscriptionId, newPriceId } = props;
-
+    async updatePlan({ userId, subscriptionId, newPriceId }) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       if (parseInt(subscription.metadata.userId) === userId) {
@@ -257,9 +257,8 @@ export const createSubscriptionController = (
           subscriptionId
         );
 
-        // Update the plan for all users with this subscription ID
-        const updatedSubscriptions: UserSubscription[] = [];
-        for (const user of subscriptionUsers) {
+        const userSubscriptionPromises = subscriptionUsers.map(async (user) => {
+          // Update the plan for all users with this subscription ID
           const userSub = await userSubRepository.createUserSubscription({
             userId: user.userId,
             subscriptionId: newSubscriptionItem.subscription,
@@ -267,8 +266,12 @@ export const createSubscriptionController = (
             customerId: user.customerId,
           });
 
-          updatedSubscriptions.push(userSub);
-        }
+          return userSub;
+        });
+
+        const updatedSubscriptions: UserSubscription[] = await Promise.all(
+          userSubscriptionPromises
+        );
 
         return {
           plan: newPlanKey,
@@ -278,13 +281,11 @@ export const createSubscriptionController = (
           createdAt: updatedSubscriptions[0].createdAt,
         };
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
 
-    async updateSeats(props) {
-      const { userId, subscriptionId, newSeats } = props;
-
+    async updateSeats({ userId, subscriptionId, newSeats }) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       if (parseInt(subscription.metadata.userId) === userId) {
@@ -309,21 +310,28 @@ export const createSubscriptionController = (
           quantity: newSeats,
         });
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
 
-    async removeUserFromSeat({ userId, subscriptionId }) {
+    async removeUserFromSeat({ userId, subscriptionId, removeUserId }) {
       const userSub = await userSubRepository
         .getUserSubscriptions(userId)
         .then(
           (data) => data.filter((el) => el.subscriptionId === subscriptionId)[0]
         );
 
-      if (!userSub.isOwner) {
-        userSubRepository.removeUserFromSubscription(userId, subscriptionId);
+      if (userSub.isOwner) {
+        if (userId !== removeUserId) {
+          await userSubRepository.removeUserFromSubscription(
+            removeUserId,
+            subscriptionId
+          );
+        } else {
+          throw cantRemoveSubOwner();
+        }
       } else {
-        throw cantRemoveSubOwner();
+        throw notAuthorizedToModifySubscription();
       }
     },
 
@@ -335,7 +343,7 @@ export const createSubscriptionController = (
           cancel_at_period_end: true,
         });
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
 
@@ -347,7 +355,7 @@ export const createSubscriptionController = (
           cancel_at_period_end: false,
         });
       } else {
-        throw subscriptionNotFound(subscriptionId);
+        throw notAuthorizedToModifySubscription();
       }
     },
   };

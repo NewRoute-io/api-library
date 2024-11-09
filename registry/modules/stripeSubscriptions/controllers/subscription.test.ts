@@ -10,7 +10,7 @@ import {
   cantRemoveSubOwner,
   noAvailableSeats,
   noEmptySeatsToRemove,
-  subscriptionNotFound,
+  notAuthorizedToModifySubscription,
 } from "@/modules/stripeSubscriptions/utils/errors/subscriptions.js";
 
 // Mock Stripe instance
@@ -164,7 +164,6 @@ describe("stripe-subscriptions API Module tests", () => {
 
       expect(stripe.checkout.sessions.create).toHaveBeenCalledWith({
         customer: mockUserSub.customerId,
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true },
@@ -201,7 +200,6 @@ describe("stripe-subscriptions API Module tests", () => {
 
       expect(stripe.checkout.sessions.create).toHaveBeenCalledWith({
         customer_email: mockUser.email,
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true },
@@ -231,7 +229,6 @@ describe("stripe-subscriptions API Module tests", () => {
       });
 
       expect(stripe.paymentLinks.create).toHaveBeenCalledWith({
-        customer_creation: "always",
         line_items: [
           {
             adjustable_quantity: { enabled: true },
@@ -260,10 +257,11 @@ describe("stripe-subscriptions API Module tests", () => {
       await controller.addUserToSeat({
         userId: mockUserId,
         subscriptionId: mockSubId,
+        addUserId: 567
       });
 
       expect(subscriptionRepoMock.createUserSubscription).toHaveBeenCalledWith({
-        userId: mockUserId,
+        userId: 567,
         subscriptionId: mockSubId,
         plan: mockPlanKey,
         isOwner: false,
@@ -284,6 +282,7 @@ describe("stripe-subscriptions API Module tests", () => {
         controller.addUserToSeat({
           userId: mockUserId,
           subscriptionId: mockSubId,
+          addUserId: 567
         })
       ).rejects.toThrowError(noAvailableSeats());
     });
@@ -307,6 +306,7 @@ describe("stripe-subscriptions API Module tests", () => {
         controller.addUserToSeat({
           userId: mockUserId,
           subscriptionId: mockSubId,
+          addUserId: 567
         })
       ).rejects.toThrowError(noAvailableSeats());
     });
@@ -350,7 +350,7 @@ describe("stripe-subscriptions API Module tests", () => {
       expect(result).toEqual(expectedValue);
     });
 
-    it("should throw subscriptionNotFound if non-owner tries to update subscription plan", async () => {
+    it("should throw notAuthorizedToModifySubscription if non-owner tries to update subscription plan", async () => {
       (stripe.subscriptions.retrieve as Mock).mockResolvedValue(
         mockSubscription
       );
@@ -361,7 +361,7 @@ describe("stripe-subscriptions API Module tests", () => {
           subscriptionId: mockSubId,
           newPriceId: "price_567",
         })
-      ).rejects.toThrowError(subscriptionNotFound(mockSubId));
+      ).rejects.toThrowError(notAuthorizedToModifySubscription());
     });
 
     it("should increase subscription seats count", async () => {
@@ -435,7 +435,7 @@ describe("stripe-subscriptions API Module tests", () => {
       expect(stripe.subscriptionItems.update).not.toHaveBeenCalled();
     });
 
-    it("should throw subscriptionNotFound if non-owner tries to update subscription seats", async () => {
+    it("should throw notAuthorizedToModifySubscription if non-owner tries to update subscription seats", async () => {
       (stripe.subscriptions.retrieve as Mock).mockResolvedValue(
         mockSubscription
       );
@@ -446,22 +446,25 @@ describe("stripe-subscriptions API Module tests", () => {
           subscriptionId: mockSubId,
           newSeats: 3,
         })
-      ).rejects.toThrowError(subscriptionNotFound(mockSubId));
+      ).rejects.toThrowError(notAuthorizedToModifySubscription());
     });
 
     it("should remove user from subscription seat", async () => {
+      const mockRemoveUserId = 567;
+
       (subscriptionRepoMock.getUserSubscriptions as Mock).mockResolvedValue([
-        { ...mockUserSub, isOwner: false },
+        mockUserSub,
       ]);
 
       await controller.removeUserFromSeat({
         userId: mockUserId,
         subscriptionId: mockSubId,
+        removeUserId: mockRemoveUserId
       });
 
       expect(
         subscriptionRepoMock.removeUserFromSubscription
-      ).toHaveBeenCalledWith(mockUserId, mockSubId);
+      ).toHaveBeenCalledWith(mockRemoveUserId, mockSubId);
     });
 
     it("should throw cantRemoveSubOwner if tried to remove subscription owner", async () => {
@@ -473,6 +476,7 @@ describe("stripe-subscriptions API Module tests", () => {
         controller.removeUserFromSeat({
           userId: mockUserId,
           subscriptionId: mockSubId,
+          removeUserId: mockUserId
         })
       ).rejects.toThrowError(cantRemoveSubOwner());
     });
@@ -492,7 +496,7 @@ describe("stripe-subscriptions API Module tests", () => {
       });
     });
 
-    it("should throw subscriptionNotFound if non-owner cancels the subscription", async () => {
+    it("should throw notAuthorizedToModifySubscription if non-owner cancels the subscription", async () => {
       (stripe.subscriptions.retrieve as Mock).mockResolvedValue(
         mockSubscription
       );
@@ -502,7 +506,7 @@ describe("stripe-subscriptions API Module tests", () => {
           userId: 567,
           subscriptionId: mockSubId,
         })
-      ).rejects.toThrowError(subscriptionNotFound(mockSubId));
+      ).rejects.toThrowError(notAuthorizedToModifySubscription());
     });
 
     it("should stop the cancellation of the subscription", async () => {
@@ -520,7 +524,7 @@ describe("stripe-subscriptions API Module tests", () => {
       });
     });
 
-    it("should throw subscriptionNotFound if non-owner stops the subscription cancelation", async () => {
+    it("should throw notAuthorizedToModifySubscription if non-owner stops the subscription cancelation", async () => {
       (stripe.subscriptions.retrieve as Mock).mockResolvedValue(
         mockSubscription
       );
@@ -530,7 +534,7 @@ describe("stripe-subscriptions API Module tests", () => {
           userId: 567,
           subscriptionId: mockSubId,
         })
-      ).rejects.toThrowError(subscriptionNotFound(mockSubId));
+      ).rejects.toThrowError(notAuthorizedToModifySubscription());
     });
   });
 });

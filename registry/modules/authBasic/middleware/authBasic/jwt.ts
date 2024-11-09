@@ -18,11 +18,10 @@ export const protectedRoute: RequestHandler = async (req, _, next) => {
   const authHeader = req.header("authorization");
 
   if (!authHeader) {
-    return next(notAuthenticated);
+    return next(notAuthenticated());
   }
 
-  const scheme = "bearer ";
-  const accessToken = authHeader.replace(scheme, "");
+  const accessToken = authHeader.replace(new RegExp("\\b[Bb]earer\\s"), "");
 
   try {
     const { userId } = accessTokenManager.validate(accessToken);
@@ -32,9 +31,9 @@ export const protectedRoute: RequestHandler = async (req, _, next) => {
       req.user = user;
       next();
     } else {
-      next(invalidAccessToken);
+      next(invalidAccessToken());
     }
   } catch (err) {
-    next(err);
+    next(invalidAccessToken());
   }
 };

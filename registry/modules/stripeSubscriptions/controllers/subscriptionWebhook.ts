@@ -8,7 +8,7 @@ interface SubscriptionsWHController {
   handleWebhook: (event: Stripe.Event) => void;
 }
 
-export const createSubscriptionsWHController = (
+export const createSubscriptionsWebHookController = (
   stripe: Stripe,
   userSubRepository: UserSubscriptionRepository
 ): SubscriptionsWHController => {

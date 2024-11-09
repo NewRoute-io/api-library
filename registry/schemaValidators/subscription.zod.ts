@@ -7,7 +7,7 @@ const getUserSubsSchema = z.object({
 
 const createCheckoutSchema = getUserSubsSchema.extend({
   priceId: z.string(),
-  seats: z.number().min(0).default(1),
+  seats: z.number().min(1).default(1).optional(),
 });
 
 const updatePlanSchema = getUserSubsSchema.extend({
@@ -22,6 +22,12 @@ const updateSeatsSchema = getUserSubsSchema.extend({
 
 const addUserToSeatSchema = getUserSubsSchema.extend({
   subscriptionId: z.string(),
+  addUserId: z.number(),
+});
+
+const removeUserFromSeatSchema = getUserSubsSchema.extend({
+  subscriptionId: z.string(),
+  removeUserId: z.number(),
 });
 
 const cancelSubscriptionSchema = getUserSubsSchema.extend({
@@ -55,7 +61,7 @@ export const subscriptionValidator = (): SubscriptionValidator => {
     },
 
     async validateRemoveUserFromSeat(payload) {
-      return await addUserToSeatSchema.parseAsync(payload);
+      return await removeUserFromSeatSchema.parseAsync(payload);
     },
 
     async validateCancelSubscription(payload) {
