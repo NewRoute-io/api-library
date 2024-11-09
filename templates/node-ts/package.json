@@ -7,7 +7,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsup --watch",
+    "dev:local": "tsup --watch --onSuccess 'pnpm local:serve'",
+    "dev:docker": "tsup --watch --onSuccess 'pnpm docker:serve'",
+    "local:serve": "pkill -f 'node dist/server.js'; node dist/server.js &",
+    "docker:serve": "if [ -f /tmp/server.pid ]; then kill -9 $(cat /tmp/server.pid); fi; node dist/server.js & echo $! > /tmp/server.pid",
     "prebuild:prod": "pnpm run clean",
     "build:prod": "NODE_ENV=production tsup",
     "clean": "rimraf ./dist"

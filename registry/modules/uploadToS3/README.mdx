@@ -5,7 +5,7 @@ features:
   available:
     - Large File Support
     - Direct-to-storage File Streaming
-postmanCollection: https://google.com
+postmanCollection: https://app.getpostman.com/run-collection/39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391
 ---
 
 ## About
@@ -87,6 +87,9 @@ function FileUpload() {
 export default FileUpload;
 ```
 
+> **NOTE:** Make sure to include the file extension when specifying `fileName`. Without an extension, the file will be stored without one. 
+The example above includes the file extension in the file name.
+
 ### Endpoints
 
 The S3 File Storage Module exposes the following endpoints:
@@ -103,14 +106,17 @@ The S3 File Storage Module exposes the following endpoints:
 
 Below are common errors with solutions for this module:
 
-| Error Code | Name                 | Solution                                                                                                                                |
-| ---------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 404        | FileNotFound         | The requested file does not exist in the S3 bucket. Verify the file's existence and ensure the correct file key is used                                                                |
-| 400        | ErrorDownloadingFile |An error occurred while downloading the file from S3. Check AWS credentials and network configuration in your environment              |
-| 400        | CantGetFiles         | An error occurred while retrieving the file list from S3. Verify AWS credentials and check the bucket permissions  |
+| Error Code | Name                 | Solution                                                                                                                  |
+| ---------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 404        | FileNotFound         | The requested file does not exist in the S3 bucket. Verify the file's existence and ensure the correct file key is used   |
+| 400        | ErrorDownloadingFile | An error occurred while downloading the file from S3. Check AWS credentials and network configuration in your environment |
+| 400        | CantGetFiles         | An error occurred while retrieving the file list from S3. Verify AWS credentials and check the bucket permissions         |
 
 ### Examples
 
 To explore sample requests and responses, download our Postman collection:
 
-<PostmanBadge collectionUrl="https://google.com" moduleName="S3 File Storage" />
+<PostmanBadge
+  collectionUrl="https://app.getpostman.com/run-collection/39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391"
+  moduleName="S3 File Storage"
+/>

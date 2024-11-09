@@ -1,5 +1,6 @@
 import express from "express";
 import { S3Client } from "@aws-sdk/client-s3";
+import { fromSSO } from "@aws-sdk/credential-provider-sso";
 
 import { storeFileValidator } from "@/schemaValidators/storeFile.zod.js";
 
@@ -8,7 +9,10 @@ import { protectedRoute } from "@/modules/authBasic/middleware/authBasic/jwt.js"
 
 import { response } from "@/modules/shared/utils/response.js";
 
-const s3Client = new S3Client();
+const s3Client = new S3Client({
+  credentials: fromSSO({ profile: "your-sso-profile" }),
+});
+
 const storeFileController = createStoreFileS3Controller(s3Client);
 const router = express.Router();
 
@@ -39,9 +43,10 @@ router
   })
   .delete(protectedRoute, async (req, res, next) => {
     const payload = req.body;
+    const { userId } = req.user!;
 
     await storeFileValidator()
-      .validateDeleteFiles(payload)
+      .validateDeleteFiles({ ...payload, userId })
       .then(storeFileController.deleteFiles)
       .then((result) => res.json(response(result)))
       .catch(next);
@@ -56,7 +61,7 @@ router
     await storeFileValidator()
       .validateGetFile({ fileName, userId })
       .then(storeFileController.downloadFile)
-      .then((result) => {
+      .then(async (result) => {
         res.setHeader(
           "Content-Type",
           result.ContentType || "application/octet-stream"
@@ -66,7 +71,9 @@ router
           `attachment; filename="${fileName}"`
         );
 
-        res.send(result.Body);
+        const body = await result.Body?.transformToByteArray()
+        res.write(body);
+        res.end();
       })
       .catch(next);
   })

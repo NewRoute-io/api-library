@@ -112,7 +112,8 @@ describe("auth-basic API Module tests", () => {
         hashedPass: "hashedPass",
       });
 
-      expect(result.user).toEqual(mockNewUser);
+      const { password, ...expectedRes } = mockNewUser;
+      expect(result.user).toEqual(expectedRes);
     });
 
     it("should throw invalidLoginCredentials when logging in with wrong username", async () => {
@@ -172,7 +173,8 @@ describe("auth-basic API Module tests", () => {
         loginData.password
       );
 
-      expect(result.user).toEqual(mockUser);
+      const { password, ...expectedRes } = mockUser;
+      expect(result.user).toEqual(expectedRes);
     });
 
     it("should refresh token", async () => {
