@@ -15,9 +15,11 @@ export type DeleteFilesSchema = {
 
 export interface StoreFileValidator {
   validateGetFile: (getFilePayload: GetFileSchema) => Promise<GetFileSchema>;
+  
   validateListFiles: (
     listFilesPayload: ListFilesSchema
   ) => Promise<ListFilesSchema>;
+  
   validateDeleteFiles: (
     deleteFilesPayload: DeleteFilesSchema
   ) => Promise<DeleteFilesSchema>;

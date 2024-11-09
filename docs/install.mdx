@@ -1,0 +1,72 @@
+---
+title: Installation
+description: Set up the CLI
+---
+
+You’re free to copy and use any code from this API Module Library — it's designed to be a foundation you can build on.
+
+To simplify setup and integration, we created a CLI tool that helps you start new projects or integrate our API Modules into existing ones. 
+The CLI handles imports, configurations, and dependencies automatically, so you can get up and running in minutes.
+
+### Start a New Project
+
+Use the `init` command to create a new Node.js project or configure an existing one. 
+Add the `-c` flag to specify a custom folder, or the CLI will set up the project in the current directory:
+
+```bash
+npx create-backend-service init
+```
+
+### Configure Your Project
+
+The CLI will prompt you with a few questions to configure your project and create `./config/modules.json`:
+
+```txt showLineNumbers
+Select your package manager: › pnpm
+What database are you going to use: › PostgreSQL
+Select your schema validator: › zod
+Should we set up Docker containers for this service (docker-compose.yaml): › no / yes 
+Should we configure a web proxy for this project (NGINX): › no / yes
+```
+
+### Choose API Modules
+
+During setup, select any initial API Modules you’d like to install as part of the project template:
+
+```txt showLineNumbers
+☐ Auth (Basic)
+☐ Stripe Subscriptions
+☐ S3 File Upload
+☐ None
+```
+
+If you choose "None," you can add modules individually after setup.
+
+### Set Folder Overrides
+
+Customize the paths for main module folders if needed:
+
+```txt showLineNumbers
+@components -> /src/components
+@routes -> /src/routes
+@middleware -> /src/middleware
+@utils -> /src/utils
+```
+
+> **Note**: Any folder overrides will still be located within `/src`.
+
+### Ready To Go
+
+Once setup is complete, run:
+
+```bash
+npm run dev
+```
+
+to start your service.
+
+To add additional modules later, simply use:
+
+```bash
+npx create-backend-service add auth-basic
+```

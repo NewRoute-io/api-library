@@ -7,7 +7,9 @@ import { HttpError } from "./errors/HttpError.js";
  */
 export const response = <T>(data?: T, error?: HttpError | Error) => {
   if (error !== undefined) {
-    return { error: { name: error?.name, message: error?.message } };
+    const errMessage = error.name === "ZodError" ? JSON.parse(error.message) : error.message;
+
+    return { error: { name: error?.name, message: errMessage } };
   }
   return { data };
 };

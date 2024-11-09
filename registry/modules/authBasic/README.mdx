@@ -1,0 +1,91 @@
+---
+title: Auth Basic
+description: Simple username and password authentication module
+features:
+  newFeatures:
+    - Automatic Reuse Detection
+  available:
+    - Username and Password Authentication
+    - JWT Access Tokens
+    - Refresh Tokens
+    - Reply Attack Protection
+  comingSoon:
+    - HTTP Cookie Sessions
+postmanCollection: https://app.getpostman.com/run-collection/39515350-6b29066f-831e-4b43-a6ac-5f84801aa5b0?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-6b29066f-831e-4b43-a6ac-5f84801aa5b0%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391
+---
+
+## About
+
+The **Auth Basic Module** provides essential authentication functionality for backend services.
+It supports quick setup for user signup and login with username and password, along with session management.
+As a core module, it enables secure access to routes and serves as the foundation for many other API modules.
+
+## Installation
+
+To add the Auth Basic Module to your project, run:
+
+```bash
+npx create-backend-service add auth-basic
+```
+
+## .env
+
+Add the following environment variables to your `.env` file:
+
+- **JWT_SECRET_KEY**: Secret key used for signing and verifying JWTs
+  - **Default**: None (required)
+  - **Example**: `JWT_SECRET_KEY=your-secret-key`
+- **JWT_ISSUER**: Issuer identifier for JWTs to ensure they’re issued by your backend
+  - **Default**: None (required)
+  - **Example**: `JWT_ISSUER=com.yourdomain`
+
+## Usage
+
+Import the `auth` router from `@/routes/auth.js` in your main entry point file (e.g., `server.ts`):
+
+```typescript server.ts
+import auth from "@/routes/auth.js";
+app.use("/auth", auth);
+```
+
+### Middleware
+
+This module provides a `protectedRoute` middleware to secure endpoints, requiring a valid JWT access token for access.
+
+```typescript showLineNumbers {3} /protectedRoute/2
+import { protectedRoute } from "@/middleware/jwt";
+
+router.post("/upload/:fileName", protectedRoute, async (req, res, next) => {
+  ...
+});
+```
+
+### Endpoints
+
+The Auth Basic Module exposes the following endpoints:
+
+| Method | Endpoint         | Description                                                 |
+| ------ | ---------------- | ----------------------------------------------------------- |
+| POST   | `/signup`        | Creates a new user account and returns session tokens       |
+| POST   | `/login`         | Authenticates the user and returns session tokens           |
+| POST   | `/refresh-token` | Issues a new JWT access token and rotates the refresh token |
+
+### Errors
+
+Below are common errors with solutions for this module:
+
+| Error Code | Name                    | Solution                                                         |
+| ---------- | ----------------------- | ---------------------------------------------------------------- |
+| 409        | UsernameNotAvailable    | Ensure `username` is unique                                      |
+| 409        | InvalidLoginCredentials | Verify the credentials are correct                               |
+| 403        | ForbiddenError          | User attempted to access a protected route with an invalid token |
+| 500        | JWTEnvVariableMissing   | Verify `.env` file configuration                                 |
+
+### Examples
+
+To explore sample requests and responses, download our Postman collection:
+
+<PostmanBadge
+  collectionUrl="https://app.getpostman.com/run-collection/39515350-6b29066f-831e-4b43-a6ac-5f84801aa5b0?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-6b29066f-831e-4b43-a6ac-5f84801aa5b0%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391"
+  moduleName="Auth Basic"
+/>

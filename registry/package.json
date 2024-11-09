@@ -8,12 +8,14 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.676.0",
+    "@aws-sdk/credential-provider-sso": "^3.687.0",
     "@aws-sdk/lib-storage": "^3.676.0",
     "argon2": "^0.41.1",
     "express": "^4.21.0",
     "formidable": "^3.5.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.13.0",
+    "stripe": "^17.2.1",
     "yup": "^1.4.0",
     "zod": "^3.23.8"
   },

@@ -1,0 +1,121 @@
+---
+title: S3 File Storage
+description: Securely upload any file to an AWS S3 bucket
+features:
+  available:
+    - Large File Support
+    - Direct-to-storage File Streaming
+postmanCollection: https://app.getpostman.com/run-collection/39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391
+---
+
+## About
+
+The S3 File Storage API module provides a secure and efficient solution for storing files of any size directly in an AWS S3 bucket.
+This module requires an existing AWS account and aims to facilitate seamless integration with minimal configuration.
+
+## Installation
+
+To add the S3 File Storage Module to your project, run:
+
+```bash
+npx create-backend-service add upload-to-s3
+```
+
+## .env
+
+Add the following environment variables to your `.env` file:
+
+- **S3_BUCKET_NAME**: The S3 bucket where files will be stored
+  - **Default**: None (required)
+  - **Example**: `S3_BUCKET_NAME=my-s3-bucket`
+
+> **Note:** Refer to the [Node.js AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) for authentication best practices.
+> The module automatically retrieves AWS credentials from your environment, with a recommendation to use AWS IAM Identity Center (SSO) for local development.
+
+## Dependencies
+
+This module will install the `auth-basic` API module for user authentication and the `protectedRoute` middleware.
+
+## Usage
+
+To use this module, import the `storeFileS3` router from `@/routes/storeFileS3.js` into your entry point file (e.g., `server.ts`):
+
+```typescript server.ts
+import storeFileS3 from "@/routes/storeFileS3.js";
+app.use("/store-file", storeFileS3);
+```
+
+### File Uploads
+
+The module uses `formidable` for parsing and streaming files to S3. The file should be sent with `multipart/form-data` content type.
+
+> Each file is stored with a unique key in the format `owner:${userId}_name:${fileName}` to associate files with the uploading user.
+> Returned file names are simplified to `fileName` only. You can adjust this logic as needed.
+
+Below is an example React component that allows users to upload files directly from a front-end form:
+
+```tsx /multipart/ /form-data/
+import React, { useState } from "react";
+import axios from "axios";
+
+function FileUpload() {
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    await axios.post("/api/store-file/upload/${file.name}", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="file"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
+      />
+      <button type="submit">Upload</button>
+    </form>
+  );
+}
+
+export default FileUpload;
+```
+
+> **NOTE:** Make sure to include the file extension when specifying `fileName`. Without an extension, the file will be stored without one. 
+The example above includes the file extension in the file name.
+
+### Endpoints
+
+The S3 File Storage Module exposes the following endpoints:
+
+| Method | Endpoint            | Description                                                               |
+| ------ | ------------------- | ------------------------------------------------------------------------- |
+| POST   | `/upload/:fileName` | Uploads a file to the designated S3 bucket                                |
+| GET    | `/files`            | Retrieves a list of uploaded files (file names only) for the current user |
+| DELETE | `/files`            | Deletes a specific file associated with the user                          |
+| GET    | `/:fileKey`         | Downloads a file by name                                                  |
+| DELETE | `/:fileKey`         | Deletes a file by name                                                    |
+
+### Errors
+
+Below are common errors with solutions for this module:
+
+| Error Code | Name                 | Solution                                                                                                                  |
+| ---------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 404        | FileNotFound         | The requested file does not exist in the S3 bucket. Verify the file's existence and ensure the correct file key is used   |
+| 400        | ErrorDownloadingFile | An error occurred while downloading the file from S3. Check AWS credentials and network configuration in your environment |
+| 400        | CantGetFiles         | An error occurred while retrieving the file list from S3. Verify AWS credentials and check the bucket permissions         |
+
+### Examples
+
+To explore sample requests and responses, download our Postman collection:
+
+<PostmanBadge
+  collectionUrl="https://app.getpostman.com/run-collection/39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391"
+  moduleName="S3 File Storage"
+/>

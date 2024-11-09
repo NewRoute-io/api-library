@@ -11,7 +11,7 @@ export const createRefreshTokenRepository = (): RefreshTokenRepository => {
             SELECT user_id, token, token_family, active, expires_at
             FROM refresh_tokens 
             WHERE token = $1
-              AND expires_at < NOW();
+              AND expires_at > NOW();
         `,
         values: [token],
       };

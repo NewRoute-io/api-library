@@ -7,6 +7,7 @@ export interface UserRepository {
 export type User = {
   userId: number;
   username: string;
+  email?: string;
   password: string;
   createdAt: string;
 };
@@ -22,4 +23,5 @@ declare global {
 export type AuthBasicSignup = {
   username: string;
   hashedPass: string;
+  email?: string;
 };
