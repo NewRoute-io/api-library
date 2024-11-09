@@ -1,0 +1,5 @@
+{
+    "postgres": {
+        "ENV": "PG_CONNECTION_STRING"
+    }
+}
