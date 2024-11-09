@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { subscriptionValidator } from "@/schemaValidators/subscription.zod.js";
 
 import { createSubscriptionController } from "@/modules/stripeSubscriptions/controllers/subscription.js";
-import { createSubscriptionsWHController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
+import { createSubscriptionsWebHookController } from "@/modules/stripeSubscriptions/controllers/subscriptionWebhook.js";
 
 import { createUserSubRepository } from "@/repositories/subscription.postgres.js";
 import { createUserRepository } from "@/repositories/user.postgres.js";
@@ -27,7 +27,7 @@ const subscriptionController = createSubscriptionController(
   userSubRepository,
   userRepository
 );
-const subscriptionWHController = createSubscriptionsWHController(
+const subscriptionWHController = createSubscriptionsWebHookController(
   stripe,
   userSubRepository
 );
@@ -69,9 +69,11 @@ router
   .post(protectedRoute, async (req, res, next) => {
     const user = req.user!;
     const { subscriptionId } = req.params;
+    const payload = req.body;
 
     await subscriptionValidator()
       .validateAddUserToSeat({
+        ...payload,
         userId: user.userId,
         subscriptionId,
       })
@@ -82,9 +84,11 @@ router
   .delete(protectedRoute, async (req, res, next) => {
     const user = req.user!;
     const { subscriptionId } = req.params;
+    const payload = req.body;
 
     await subscriptionValidator()
       .validateRemoveUserFromSeat({
+        ...payload,
         userId: user.userId,
         subscriptionId,
       })
@@ -122,7 +126,7 @@ router
       .catch(next);
   });
 
-router.get("/payment/checkout", protectedRoute, async (req, res, next) => {
+router.post("/payment/checkout", protectedRoute, async (req, res, next) => {
   const user = req.user!;
   const payload = req.body;
 
@@ -136,7 +140,7 @@ router.get("/payment/checkout", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-router.get("/payment/link", protectedRoute, async (req, res, next) => {
+router.post("/payment/link", protectedRoute, async (req, res, next) => {
   const user = req.user!;
   const payload = req.body;
 
@@ -150,7 +154,7 @@ router.get("/payment/link", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-router.post("webhook", validateStripeSignature, async (req, res, next) => {
+router.post("/webhook", validateStripeSignature, async (req, res, next) => {
   try {
     const eventPayload = req.stripeEvent!;
 
@@ -178,4 +182,4 @@ router.patch("/:subscriptionId", protectedRoute, async (req, res, next) => {
     .catch(next);
 });
 
-export { router };
+export { router as subscriptionRouter };

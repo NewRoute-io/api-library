@@ -13,7 +13,7 @@ features:
   comingSoon:
     - Usage-Based Subscriptions
     - Free Tiers
-postmanCollection: https://google.com
+postmanCollection: https://app.getpostman.com/run-collection/39515350-cd2bdb24-9802-4392-811b-ff743b769305?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-cd2bdb24-9802-4392-811b-ff743b769305%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391
 ---
 
 ## About
@@ -96,11 +96,10 @@ Seats can be configured during Stripe Checkout by adjusting the `quantity` prope
 ```typescript {6}
 const checkout = await stripe.checkout.sessions.create({
   ...customerData,
-  customer_creation: "always",
   line_items: [
     {
       adjustable_quantity: { enabled: true },
-      quantity: seats,
+      quantity: seats || 1,
       price: priceId,
     },
   ],
@@ -122,8 +121,8 @@ The Stripe Subscriptions Module exposes the following endpoints:
 | ------ | ------------------------- | ------------------------------------------------------------------------------ |
 | POST   | `/`                       | Lists available subscriptions                                                  |
 | GET    | `/user`                   | Lists current subscriptions of the authenticated user                          |
-| GET    | `/payment/checkout`       | Generates a Stripe Checkout URL for user subscriptions                         |
-| GET    | `/payment/link`           | Generates a reusable Stripe Payment Link for user subscriptions                |
+| POST   | `/payment/checkout`       | Generates a Stripe Checkout URL for user subscriptions                         |
+| POST   | `/payment/link`           | Generates a reusable Stripe Payment Link for user subscriptions                |
 | PATCH  | `/:subscriptionId`        | Upgrades/Downgrades subscription, prorates based on current billing period     |
 | POST   | `/:subscriptionId/seat`   | Adds a user to a seat in a seat-based subscription (Owner only)                |
 | DELETE | `/:subscriptionId/seat`   | Removes a user from a seat in a seat-based subscription (Owner only)           |
@@ -148,6 +147,6 @@ Below are common errors with solutions for this module:
 To explore sample requests and responses, download our Postman collection:
 
 <PostmanBadge
-  collectionUrl="https://google.com"
+  collectionUrl="https://app.getpostman.com/run-collection/39515350-cd2bdb24-9802-4392-811b-ff743b769305?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-cd2bdb24-9802-4392-811b-ff743b769305%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391"
   moduleName="Stripe Subscriptions"
 />

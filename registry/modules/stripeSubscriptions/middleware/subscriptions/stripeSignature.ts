@@ -20,7 +20,7 @@ export const validateStripeSignature: RequestHandler = async (req, _, next) => {
   const sig = req.header("stripe-signature");
 
   if (sig) {
-    const body = req.body;
+    const body = req.rawBody;
     const event = await stripe.webhooks.constructEventAsync(body, sig, STRIPE_WH_SECRET);
     req.stripeEvent = event;
     

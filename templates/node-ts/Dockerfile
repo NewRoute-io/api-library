@@ -9,7 +9,7 @@ RUN pnpm install
 FROM base AS development
 COPY . .
 EXPOSE 3000
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "run", "dev:docker"]
 
 # Stage 3: Build stage (for production)
 FROM base AS build
