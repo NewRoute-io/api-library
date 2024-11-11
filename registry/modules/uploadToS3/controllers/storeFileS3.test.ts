@@ -74,6 +74,7 @@ describe("upload-to-s3 API Module Tests", () => {
         name: mockFileName,
         size: 1024,
         modified: new Date(),
+        s3Location: `https://mockBucketName.s3.us-east-1.amazonaws.com/owner:${mockUserId}_name:${mockFileName}`,
       };
 
       s3Mock.on(ListObjectsV2Command).resolves({
