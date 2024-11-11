@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
+import cors from "cors";
 
 import {
   endpointNotImplemented,
@@ -18,6 +19,7 @@ declare module "http" {
   }
 }
 
+app.use(cors());
 app.use(
   express.json({
     verify: (req, _, buf) => {
@@ -36,7 +38,7 @@ app.use(helmet());
 /**
  * Example endpoint definition:
  *
- * app.use("/api/user", v1.user);
+ * app.use("/api/user", userRouter);
  */
 
 /*------------- Error middleware -------------*/

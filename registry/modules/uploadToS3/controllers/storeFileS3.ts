@@ -26,13 +26,14 @@ import {
 } from "@/modules/uploadToS3/utils/errors/storeFileS3.js";
 
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
+const S3_BUCKET_REGION = process.env.S3_BUCKET_REGION;
 
 interface UploadFile extends GetFileSchema {
   req: Request;
 }
 
 type UploadedFileLoc = { s3Location: string | undefined };
-type FileOutput = {
+interface FileOutput extends UploadedFileLoc {
   name: string;
   size?: number;
   modified?: Date;
@@ -119,17 +120,9 @@ export const createStoreFileS3Controller = (
           name: file.Key!.split("name:")[1],
           size: file.Size,
           modified: file.LastModified,
-        })) || [];
+          s3Location: `https://${S3_BUCKET_NAME}.s3.${S3_BUCKET_REGION}.amazonaws.com/${file.Key}`,
 
-      list.Contents?.forEach((file) => {
-        if (file.Key) {
-          fileNames.push({
-            name: file.Key.split("name:")[1],
-            size: file.Size,
-            modified: file.LastModified,
-          });
-        }
-      });
+        })) || [];
 
       return { files: fileNames, nextToken: list.NextContinuationToken };
     },

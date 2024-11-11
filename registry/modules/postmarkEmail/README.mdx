@@ -1,0 +1,132 @@
+---
+title: Emails (Postmark)
+description: Simple module to send transaction emails in your backend service
+features:
+  available:
+    - Transactional Emails
+    - Bulk Emails
+    - DMARK Setup Instructions
+---
+
+## About
+
+The **Emails (Postmark) Module** enables you to send transactional and bulk emails using [Postmark](https://postmarkapp.com).
+It’s designed for secure, efficient email operations within your backend service.
+This module doesn’t expose endpoints by default but can easily be adapted to include them as needed.
+
+## Installation
+
+To add the Emails (Postmark) Module to your project, run:
+
+```bash
+npx vratix add postmark-email
+```
+
+## .env
+
+Add the following environment variable to your `.env` file:
+
+- **POSTMARK_SERVER_TOKEN**: Postmark server token required to authenticate email sending
+  - **Default**: None (required)
+  - **Example**: `POSTMARK_SERVER_TOKEN=xxxx-xxxxx-xxxx-xxxxx-xxxxxx`
+
+## Dependencies
+
+The module requires the `auth-basic` API module for user management. It will be automatically installed with this module if not already present.
+
+## Usage
+
+Here is an example of using the `sendEmail` controller. If needed, you can pass a custom `postmark.ServerClient` instance when creating the `emailController`:
+
+```typescript
+import { createEmailController } from "@/controllers/email.js";
+import { createUserRepository } from "@/repositories/user.js";
+
+const userRepository = createUserRepository();
+const emailController = createEmailController(userRepository);
+
+type ExamplePayload = {
+  foo: string;
+};
+
+emailController.sendEmail<ExamplePayload>({
+  receiverId: 123,
+  templateName: "exampleTemplate",
+  payload: { foo: "bar" },
+});
+```
+
+### Strongly Typed Payloads
+
+To ensure strongly typed payloads, you can pass a generic type to `sendEmail` and `sendBulkEmails`:
+
+```typescript {4}
+type SendEmail<T> = {
+  receiverId: number;
+  templateName: string;
+  payload: T;
+};
+```
+
+You can also define payload types in `/src/controllers/email.ts` like this:
+
+```typescript
+type ExampleTemplatePayload = {
+  foo: string;
+};
+
+type EmailPayload = ExampleTemplatePayload | object;
+
+type SendEmail = {
+  receiverId: number;
+  templateName: string;
+  payload: EmailPayload;
+};
+```
+
+### Sending Customized Bulk Emails
+
+For bulk emails with customized content for each recipient, modify the types as follows:
+
+```typescript
+type SendBulkEmails<T> = {
+  templateName: string;
+  payload: Omit<SendEmail<T>, "templateName">[];
+};
+```
+
+> **NOTE**: Adjust the controller logic to handle the `payload` array if sending unique data to multiple recipients.
+
+### Errors
+
+Below are common errors with solutions for this module:
+
+| Error Code | Name           | Solution                                                                              |
+| ---------- | -------------- | ------------------------------------------------------------------------------------- |
+| 404        | EmailNotFound  | Ensure the user has an email associated with their account                            |
+| 500        | SendEmailError | An issue occurred with the Postmark SDK. Verify your Postmark server token is correct |
+
+## DMARC Setup Instructions (Optional)
+
+If you have configured DMARK for your domain you can skip this part.
+
+To enhance deliverability and security, follow these steps to configure DMARC for your email domain.
+DMARC (Domain-based Message Authentication, Reporting, and Conformance) helps protect against email spoofing and ensures that emails sent from your domain are authenticated. [Postman's What is DMARC](https://postmarkapp.com/support/article/892-what-is-dmarc)
+
+### 1. Set Up SPF and DKIM Records
+
+- **SPF (Sender Policy Framework)**: Define the servers authorized to send emails for your domain.
+  - Add an SPF record to your DNS settings: `v=spf1 include:spf.postmarkapp.com ~all`
+- **DKIM (DomainKeys Identified Mail)**: Enable DKIM to sign outgoing messages.
+  - In Postmark, go to your domain settings to find the DKIM keys and add them to your DNS records.
+
+### 2. Configure DMARC Policy
+
+- Create a DMARC TXT record in your DNS settings. Here’s a basic example:
+
+  ```text
+  Host: _dmarc.yourdomain.com
+  Value: "v=DMARC1; p=none; rua=mailto:dmarc-reports@yourdomain.com"
+  ```
+
+- **Tip**: Start with `p=none` to monitor your DMARC results before enforcing stricter policies.

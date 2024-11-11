@@ -25,7 +25,7 @@ As a core module, it enables secure access to routes and serves as the foundatio
 To add the Auth Basic Module to your project, run:
 
 ```bash
-npx create-backend-service add auth-basic
+npx vratix add auth-basic
 ```
 
 ## .env
@@ -41,11 +41,12 @@ Add the following environment variables to your `.env` file:
 
 ## Usage
 
-Import the `auth` router from `@/routes/auth.js` in your main entry point file (e.g., `server.ts`):
+Import the router from `@/routes/auth.js` in your main entry point file (e.g., `server.ts`):
 
 ```typescript server.ts
-import auth from "@/routes/auth.js";
-app.use("/auth", auth);
+import { router as authRouter } from "@/routes/auth.js";
+
+app.use("/api/auth", authRouter);  
 ```
 
 ### Middleware

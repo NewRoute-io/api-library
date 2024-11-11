@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { sdkStreamMixin } from "@smithy/util-stream";
 import { mockClient } from "aws-sdk-client-mock";
 
@@ -17,25 +17,6 @@ import {
 } from "@/modules/uploadToS3/utils/errors/storeFileS3.js";
 
 const s3Mock = mockClient(S3Client);
-
-vi.mock("formidable", () => {
-  const mockImplementation = {
-    on: vi.fn(),
-    parse: vi.fn(),
-  };
-
-  return {
-    default: vi.fn(() => mockImplementation),
-  };
-});
-
-vi.mock("@aws-sdk/lib-storage", () => ({
-  Upload: vi.fn().mockImplementation(() => ({
-    done: vi.fn().mockResolvedValue({
-      Location: "https://s3.amazonaws.com/bucket/test-file.txt",
-    }),
-  })),
-}));
 
 describe("upload-to-s3 API Module Tests", () => {
   describe("StoreFileS3 Controller Tests", () => {
@@ -57,53 +38,6 @@ describe("upload-to-s3 API Module Tests", () => {
       // Injecting the mocked repository into the controller
       controller = createStoreFileS3Controller(s3Client);
     });
-
-    /**
-     *
-     * NOTE: Testing streamed files seems to be tricky, left the implementation commented out for now
-     *       we should discuss if its worth testing at all
-     *
-     */
-
-    // describe("Upload file tests", () => {
-    //   const mockReq: any = {};
-    //   let mockForm: ReturnType<typeof formidable>;
-    //   let listeners: Record<string, Function>;
-
-    //   beforeEach(() => {
-    //     listeners = {};
-    //     mockForm = formidable({ allowEmptyFiles: false });
-
-    //     // Mock the 'on' method to register event listeners
-    //     (mockForm.on as Mock).mockImplementation((event, callback) => {
-    //       listeners[event] = callback;
-    //     });
-    //   });
-
-    //   it("should successfully upload a file to S3", async () => {
-    //     const result = await controller.uploadFile({
-    //       req: mockReq,
-    //       fileName: mockFileName,
-    //     });
-    //     expect(result).toEqual({
-    //       s3Location: `https://s3.amazonaws.com/bucket/${mockFileName}`,
-    //     });
-
-    //     expect(mockForm.parse).toHaveBeenCalledWith(mockReq);
-    //   });
-
-    //   it("should handle file parsing errors when streaming a file to S3", async () => {
-    //     const mockErrorCode = "MockError";
-
-    //     (mockForm.parse as Mock).mockImplementation((_) => {
-    //       listeners["error"]({ code: mockErrorCode });
-    //     });
-
-    //     await expect(controller.uploadFile(mockReq)).rejects.toThrowError(
-    //       fileUploadFailed(mockErrorCode)
-    //     );
-    //   });
-    // });
 
     it("should download a file from S3", async () => {
       const stream = new Readable();
@@ -140,6 +74,7 @@ describe("upload-to-s3 API Module Tests", () => {
         name: mockFileName,
         size: 1024,
         modified: new Date(),
+        s3Location: `https://mockBucketName.s3.us-east-1.amazonaws.com/owner:${mockUserId}_name:${mockFileName}`,
       };
 
       s3Mock.on(ListObjectsV2Command).resolves({

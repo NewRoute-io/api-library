@@ -18,7 +18,7 @@ This module requires an existing AWS account and aims to facilitate seamless int
 To add the S3 File Storage Module to your project, run:
 
 ```bash
-npx create-backend-service add upload-to-s3
+npx vratix add upload-to-s3
 ```
 
 ## .env
@@ -28,6 +28,9 @@ Add the following environment variables to your `.env` file:
 - **S3_BUCKET_NAME**: The S3 bucket where files will be stored
   - **Default**: None (required)
   - **Example**: `S3_BUCKET_NAME=my-s3-bucket`
+- **S3_BUCKET_REGION**: The AWS Region of your S3 bucket
+  - **Default**: None (required)
+  - **Example**: `S3_BUCKET_REGION=us-east-1`
 
 > **Note:** Refer to the [Node.js AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) for authentication best practices.
 > The module automatically retrieves AWS credentials from your environment, with a recommendation to use AWS IAM Identity Center (SSO) for local development.
@@ -38,11 +41,12 @@ This module will install the `auth-basic` API module for user authentication and
 
 ## Usage
 
-To use this module, import the `storeFileS3` router from `@/routes/storeFileS3.js` into your entry point file (e.g., `server.ts`):
+To use this module, import the router from `@/routes/storeFileS3.js` into your entry point file (e.g., `server.ts`):
 
 ```typescript server.ts
-import storeFileS3 from "@/routes/storeFileS3.js";
-app.use("/store-file", storeFileS3);
+import { router as storeFileRouter } from "@/routes/storeFileS3.js";
+
+app.use("/store-file", storeFileRouter);
 ```
 
 ### File Uploads
@@ -51,6 +55,7 @@ The module uses `formidable` for parsing and streaming files to S3. The file sho
 
 > Each file is stored with a unique key in the format `owner:${userId}_name:${fileName}` to associate files with the uploading user.
 > Returned file names are simplified to `fileName` only. You can adjust this logic as needed.
+> **NOTE:** Make sure to include the file extension when specifying `fileName`.
 
 Below is an example React component that allows users to upload files directly from a front-end form:
 
@@ -86,20 +91,17 @@ function FileUpload() {
 export default FileUpload;
 ```
 
-> **NOTE:** Make sure to include the file extension when specifying `fileName`. Without an extension, the file will be stored without one. 
-The example above includes the file extension in the file name.
-
 ### Endpoints
 
 The S3 File Storage Module exposes the following endpoints:
 
-| Method | Endpoint            | Description                                                               |
-| ------ | ------------------- | ------------------------------------------------------------------------- |
-| POST   | `/upload/:fileName` | Uploads a file to the designated S3 bucket                                |
-| GET    | `/files`            | Retrieves a list of uploaded files (file names only) for the current user |
-| DELETE | `/files`            | Deletes a specific file associated with the user                          |
-| GET    | `/:fileKey`         | Downloads a file by name                                                  |
-| DELETE | `/:fileKey`         | Deletes a file by name                                                    |
+| Method | Endpoint            | Description                                             |
+| ------ | ------------------- | ------------------------------------------------------- |
+| POST   | `/upload/:fileName` | Uploads a file to the designated S3 bucket              |
+| GET    | `/files`            | Retrieves a list of uploaded files for the current user |
+| DELETE | `/files`            | Deletes a specific file associated with the user        |
+| GET    | `/:fileKey`         | Downloads a file by name                                |
+| DELETE | `/:fileKey`         | Deletes a file by name                                  |
 
 ### Errors
 
