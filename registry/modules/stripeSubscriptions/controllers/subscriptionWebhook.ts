@@ -22,7 +22,7 @@ export const createSubscriptionsWebHookController = (
           if (mode === "subscription" && subscription) {
             const stripeSub = await stripe.subscriptions.retrieve(
               subscription as string,
-              { expand: ["data.items.data.price.product"] }
+              { expand: ["items.data.price.product"] }
             );
 
             const userId = parseInt(stripeSub.metadata.userId);
