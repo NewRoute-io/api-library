@@ -1,6 +1,16 @@
-# (Optional) SSL Setup for NGINX Proxy
+---
+title: NGINX Configuration Guide
+description: Configure an NGINX web proxy for your backend service with SSL support
+---
 
-> This guide explains how to install SSL certificates for NGINX using Let's Encrypt. SSL certificates are generated on the host and then mounted into the NGINX Docker container.
+Our Node.js template includes a minimal [NGINX configuration](https://github.com/vratix-dev/api-library/tree/17826bff71a99fc1e74860f3acc9129e27b3dbec/templates/node-ts/nginx) 
+that works out-of-the-box for most deployments, but you can expand it as needed.
+
+The default template does not include SSL support. Below are detailed instructions on setting up SSL with Let's Encrypt.
+
+## SSL Setup (Optional)
+
+> SSL certificates are generated on the host and then mounted into the NGINX Docker container.
 
 ### 1. Install Certbot and Generate SSL Certificates
 
@@ -12,7 +22,7 @@ sudo apt install certbot
 
 2. **Generate SSL certificates** for your domain. Replace `yourdomain.com` with your actual domain name:
 
-```bash
+```bash /yourdomain.com/
 sudo certbot certonly --standalone -d yourdomain.com -d www.yourdomain.com
 ```
 
@@ -23,7 +33,7 @@ Certificates will be stored in `/etc/letsencrypt/live/yourdomain.com/`.
 Modify your `nginx.conf` to enable SSL:
 
 1. **Add an HTTPS server block** in `nginx.conf`, configured as follows:
-```nginx
+```nginx /yourdomain.com/
 server {
     listen 443 ssl;
     server_name yourdomain.com;
@@ -44,7 +54,7 @@ server {
 }
 ```
 2. **Add an HTTP to HTTPS redirect block** (optional):
-```nginx
+```nginx /yourdomain.com/
 server {
     listen 80;
     server_name yourdomain.com;
@@ -58,7 +68,7 @@ server {
 Ensure SSL certificates are available to the NGINX container by mounting them in `docker-compose.yml`. 
 Replace `yourdomain.com` with your domain name:
 
-```yaml
+```yaml /yourdomain.com/
 services:
   nginx:
     volumes:

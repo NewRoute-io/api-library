@@ -6,6 +6,7 @@ features:
     - Transactional Emails
     - Bulk Emails
     - DMARK Setup Instructions
+testCoverage: 100
 ---
 
 ## About
@@ -124,9 +125,9 @@ DMARC (Domain-based Message Authentication, Reporting, and Conformance) helps pr
 
 - Create a DMARC TXT record in your DNS settings. Here’s a basic example:
 
-  ```text
-  Host: _dmarc.yourdomain.com
-  Value: "v=DMARC1; p=none; rua=mailto:dmarc-reports@yourdomain.com"
-  ```
+```text
+Host: _dmarc.yourdomain.com
+Value: "v=DMARC1; p=none; rua=mailto:dmarc-reports@yourdomain.com"
+```
 
 - **Tip**: Start with `p=none` to monitor your DMARC results before enforcing stricter policies.

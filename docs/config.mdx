@@ -3,14 +3,14 @@ title: Config File
 description: Project configuration
 ---
 
-When you initialize your API project using our CLI, you will see a `.config/modules.json` file created in your project. 
-This file includes configurations the CLI uses when adding new modules to your project. See [The CLI](/docs/cli) for more information.
+When you initialize your new API project using our CLI, you will see a `.config/modules.json` file created. 
+It contains configurations the CLI uses when adding new modules to your project. See [The CLI](/docs/cli) for more information.
 
-> **NOTE:** If you're simply copying files from our modules, this configuration file is not required.
+> **NOTE:** This configuration file is not required if you're copying code from our GitHub repo. 
 
-Most modifications to this file can breatk the CLI’s functionality, but here are a few things you can safely adjust if needed.
+Most modifications to this file can break the CLI’s functionality, but here are a few things you can safely adjust if needed.
 
-## packageManger
+## `packageManger`
 
 Specifies the package manager used to install dependencies. 
 Change this if you switch to a different package manager after initial setup.
@@ -21,7 +21,7 @@ Change this if you switch to a different package manager after initial setup.
 }
 ```
 
-## docker
+## `docker`
 
 This property indicates whether Docker containers should be configured when installing new modules. 
 Set this to `false` if you decide to stop using Docker.
@@ -32,7 +32,7 @@ Set this to `false` if you decide to stop using Docker.
 }
 ```
 
-## schemaValidator
+## `schemaValidator`
 
 Defines the schema validator for request payloads. 
 If you change the validator in your codebase, update this property so the CLI installs the correct dependencies accordingly.
@@ -43,7 +43,7 @@ If you change the validator in your codebase, update this property so the CLI in
 }
 ```
 
-## database
+## `database`
 
 Set your main database here. If you change databases, update this property so the CLI can install the appropriate DB repositories and schemas. 
 See **Databases** for supported DB engines.
@@ -54,14 +54,14 @@ See **Databases** for supported DB engines.
 }
 ```
 
-## folderOverrides
+## `folderOverrides`
 
 This section allows path overrides for core files in your Node.js project. Update these properties if you change the folder structure after initialization.
 
 > By default, the CLI considers `./src` as the root directory for all files. 
 For example, `"controllers": "controllers"` will store controller files in `./src/controllers`.
 
-### folderOverrides.controllers 
+### `folderOverrides.controllers` 
 
 Specifies the folder path for storing controller files, where you’ll implement business logic.
 
@@ -73,7 +73,7 @@ Specifies the folder path for storing controller files, where you’ll implement
 }
 ```
 
-### folderOverrides.routes 
+### `folderOverrides.routes` 
 
 Defines the location for endpoint route files.
 
@@ -85,7 +85,7 @@ Defines the location for endpoint route files.
 }
 ```
 
-### folderOverrides.middleware 
+### `folderOverrides.middleware`
 
 Sets the path for middleware files, allowing you to configure custom middleware for Express.js.
 
@@ -97,7 +97,7 @@ Sets the path for middleware files, allowing you to configure custom middleware 
 }
 ```
 
-### folderOverrides.utils 
+### `folderOverrides.utils` 
 
 Specifies where helper and miscellaneous utility scripts are stored.
 

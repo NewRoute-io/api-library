@@ -1,0 +1,56 @@
+---
+title: PostgreSQL
+description: Guide for setting up and managing PostgreSQL with our API modules
+---
+Our API modules currently support PostgreSQL for handling data storage, migrations, and seamless integration with your backend. 
+This guide covers configuring PostgreSQL, setting up a local environment, and managing migrations.
+
+## Configuration
+
+To configure PostgreSQL as your database engine, ensure you’ve set up your environment file correctly with the following `.env` variable:
+
+```dotenv
+PG_CONNECTION_STRING=postgresql://{username}:{password}@{hostname}:5432/postgres
+```
+
+If you are running the DB as a Docker container, use `postgres` as the hostname.
+
+## Running with Docker
+
+To spin up a local PostgreSQL database, you can use Docker to avoid manual installation:
+
+1. If Docker is enabled in your project, a `/dbConfig/postgres/docker-compose.yaml` file should already be present with a PostgreSQL service setup, 
+If you haven't created your project using our CLI, you will need to add a Docker Compose file yourself.
+
+2. To start the PostgreSQL container, run:
+```bash
+docker compose up -d postgres
+```
+
+## Migrations
+
+Our CLI generates migration files for each module, making it easy to handle your database updates.
+
+> **NOTE:** All of our modules that have a DB repository implementation come with schema and migration files, which are added to your project when installing them.
+
+1. **Run Migrations** from your project root:
+
+```bash
+npm run migrate:up
+```
+
+This command will execute migration files in the order specified, ensuring your database schema is up-to-date.
+
+3. **Rollback (Optional):** If you need to undo the latest migration, you can roll it back by running:
+
+```bash
+npm run migrate:down
+```
+
+This will reverse the latest migration, which is useful for testing changes or rolling back in development environments.
+
+## Template Repository
+
+If you select None as your database during CLI setup, a repository template will be added to your project. 
+This template provides a foundation for implementing any database of your choice. 
+The repository pattern abstracts data access logic, making it easy to integrate, replace, or modify for various databases.

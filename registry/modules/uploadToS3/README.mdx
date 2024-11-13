@@ -6,6 +6,7 @@ features:
     - Large File Support
     - Direct-to-storage File Streaming
 postmanCollection: https://app.getpostman.com/run-collection/39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D39515350-90213a2f-1b4c-496f-abe7-0a7d66112a3e%26entityType%3Dcollection%26workspaceId%3D36bf5973-695a-44e0-889e-bba83a364391
+testCoverage: 61.3
 ---
 
 ## About
@@ -32,9 +33,6 @@ Add the following environment variables to your `.env` file:
   - **Default**: None (required)
   - **Example**: `S3_BUCKET_REGION=us-east-1`
 
-> **Note:** Refer to the [Node.js AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) for authentication best practices.
-> The module automatically retrieves AWS credentials from your environment, with a recommendation to use AWS IAM Identity Center (SSO) for local development.
-
 ## Dependencies
 
 This module will install the `auth-basic` API module for user authentication and the `protectedRoute` middleware.
@@ -47,6 +45,18 @@ To use this module, import the router from `@/routes/storeFileS3.js` into your e
 import { router as storeFileRouter } from "@/routes/storeFileS3.js";
 
 app.use("/store-file", storeFileRouter);
+```
+
+### Authentication
+
+**Note:** Refer to the [Node.js AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) for authentication best practices.
+The module automatically retrieves AWS credentials from your environment.
+
+We reccomend you use AWS IAM Identity Center (SSO) for local development. After you complete the AWS SSO configuration you will need to update the SSO profile name in `src/routes/storeFileS3.ts`:
+```typescript /your-sso-profile/
+const s3Client = new S3Client({
+  credentials: fromSSO({ profile: "your-sso-profile" }),
+});
 ```
 
 ### File Uploads
