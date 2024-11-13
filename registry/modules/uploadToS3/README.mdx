@@ -32,9 +32,6 @@ Add the following environment variables to your `.env` file:
   - **Default**: None (required)
   - **Example**: `S3_BUCKET_REGION=us-east-1`
 
-> **Note:** Refer to the [Node.js AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) for authentication best practices.
-> The module automatically retrieves AWS credentials from your environment, with a recommendation to use AWS IAM Identity Center (SSO) for local development.
-
 ## Dependencies
 
 This module will install the `auth-basic` API module for user authentication and the `protectedRoute` middleware.
@@ -47,6 +44,18 @@ To use this module, import the router from `@/routes/storeFileS3.js` into your e
 import { router as storeFileRouter } from "@/routes/storeFileS3.js";
 
 app.use("/store-file", storeFileRouter);
+```
+
+### Authentication
+
+**Note:** Refer to the [Node.js AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-your-credentials.html) for authentication best practices.
+The module automatically retrieves AWS credentials from your environment.
+
+We reccomend you use AWS IAM Identity Center (SSO) for local development. After you complete the AWS SSO configuration you will need to update the SSO profile name in `src/routes/storeFileS3.ts`:
+```typescript /your-sso-profile/
+const s3Client = new S3Client({
+  credentials: fromSSO({ profile: "your-sso-profile" }),
+});
 ```
 
 ### File Uploads

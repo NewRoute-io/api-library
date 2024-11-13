@@ -1,0 +1,81 @@
+---
+title: Deployment
+description: Deployment Guide
+---
+
+Deploy your backend service locally or on your cloud service of choice using Docker or directly on your host machine.
+
+## With Docker
+
+If Docker is enabled for your project, a `docker-compose.yaml` file will be available with all necessary container configurations. 
+Ensure Docker Engine and Docker Compose are installed.
+
+### localhost
+
+**Step 1:** Configure your `.env` file with the necessary environment variables.
+
+**Step 2:** Run the following command to start the service:
+
+```bash
+docker compose up -d --build
+```
+
+This command performs several actions:
+
+1. **Copies your service files** to the `backend` container.
+2. **Builds the project** in the container with `tsup --watch`.
+3. **Runs the service** within the container, monitoring for changes and restarting as needed. Refer to the `docker:serve` command in `package.json`.
+4. **Builds and runs other containers** (e.g., `postgres` or `ingress-proxy`) as specified in `docker-compose.yaml`.
+
+### Staging/Production
+
+> **Note:** Using a prebuilt container image is recommended for cloud deployments. This guide outlines deployment without a prebuilt image.
+
+If you are using a cloud-provisioned DB resource, you might want to remove any DB containers in staging/production by updating the `include` property in your `docker-compose.yaml`.
+
+**Step 1:** Set `NODE_ENV=production` in your `.env` file to target the production build stage (see `docker-compose.yaml` on line 7).
+
+**Step 2:** Clone your project to the host server and install any required dependencies, such as Docker Compose and `pnpm`.
+
+**Step 3:** Configure your production `.env` with the appropriate variables.
+
+**Step 4 (Optional):** Configure an NGINX proxy for SSL and to handle incoming requests. Refer to the [NGINX guide](/docs/nginx).
+
+**Step 5:** Run the following command to build and start the Docker services:
+
+```bash
+docker compose up -d --build
+```
+
+## Without Docker
+
+Running the service without Docker simplifies the process, though you may still need a DB container for local development or an NGINX proxy for staging/production.
+
+### localhost
+
+**Step 1:** Configure your `.env` file with required local environment variables.
+
+**Step 2:** Use the following command to start the service:
+
+```bash
+npm run dev:local
+```
+
+This will:
+1. Build the project in watch mode using `tsup --watch`
+2. Run the service, automatically restarting on file changes. See the `local:serve` command in `package.json` for configuration.
+
+### Staging/Production
+
+**Step 1:** Clone your project to the production server.
+
+**Step 2:** Configure your production `.env` with the appropriate variables.
+
+**Step 3 (Optional):** Configure a reverse proxy (e.g., NGINX) to handle SSL and incoming requests. Refer to the [NGINX guide](/docs/nginx) for setup.
+
+**Step 4:** Run the following commands to build and start the service:
+
+```bash
+npm run build:prod
+npm run prod:serve
+```

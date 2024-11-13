@@ -1,6 +1,7 @@
 # Vratix API Module Library
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 ![GitHub License](https://img.shields.io/github/license/vratix-dev/api-library)
+<!-- ![NPM Downloads](https://img.shields.io/npm/dm/vratix) -->
 
 ## Overview 
 Easy-to-use, open-source modules that implement common API logic for seamless integration into Node.js APIs.

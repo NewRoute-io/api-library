@@ -5,8 +5,8 @@ description: Set up the CLI
 
 You’re free to copy and use any code from this API Module Library — it's designed to be a foundation you can build on.
 
-To simplify setup and integration, we created a CLI tool that helps you start new projects or integrate our API Modules into existing ones. 
-The CLI handles imports, configurations, and dependencies automatically, so you can get up and running in minutes.
+To simplify setup and integration, we created a CLI tool to help you start new projects or integrate our API Modules into existing ones. 
+The CLI handles imports, configurations, and dependencies automatically, so you can get up and running in seconds.
 
 ### Start a New Project
 
@@ -37,6 +37,7 @@ During setup, select any initial API Modules you’d like to install as part of 
 ☐ Auth (Basic)
 ☐ Stripe Subscriptions
 ☐ S3 File Upload
+...
 ☐ None
 ```
 
@@ -57,16 +58,14 @@ Customize the paths for main module folders if needed:
 
 ### Ready To Go
 
-Once setup is complete, run:
+Once setup is complete, to start your service run:
 
 ```bash
 npm run dev
 ```
 
-to start your service.
-
-To add additional modules later, simply use:
+To add additional modules later, use:
 
 ```bash
-npx vratix add auth-basic
+npx vratix add <module>
 ```

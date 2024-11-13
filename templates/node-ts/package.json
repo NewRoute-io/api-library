@@ -12,9 +12,10 @@
     "dev:docker": "tsup --watch --onSuccess 'pnpm docker:serve'",
     "local:serve": "pkill -f 'node dist/server.js'; node dist/server.js &",
     "docker:serve": "if [ -f /tmp/server.pid ]; then kill -9 $(cat /tmp/server.pid); fi; node dist/server.js & echo $! > /tmp/server.pid",
+    "clean": "rimraf ./dist",
     "prebuild:prod": "pnpm run clean",
     "build:prod": "NODE_ENV=production tsup",
-    "clean": "rimraf ./dist"
+    "prod:serve": "node dist/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

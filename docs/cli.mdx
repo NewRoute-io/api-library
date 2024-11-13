@@ -3,11 +3,11 @@ title: The CLI
 description: Guide to using our CLI
 ---
 
-Our CLI offers a quick, hassle-free way to set up a new project or install new API modules with a single command.
+Our CLI offers a quick, hassle-free way to set up a new project and install API modules with a single command.
 
-While you’re welcome to copy source code directly from our GitHub repo, the CLI significantly simplifies the setup process by automating file placements, dependency resolutions, and configurations.
+While you’re free to copy source code directly from our GitHub repo, the CLI significantly simplifies the setup process by automating file placements, dependency resolutions, and other configurations.
 
-The "raw" source code of API modules in GitHub may appear complex if copied directly. This setup is intentional for development purposes but can be confusing when integrating manually.
+The "raw" source code of API modules in GitHub may appear complex if copied directly. This setup is intentional to make the CLI work but can be confusing when integrating manually.
 
 Using the CLI ensures smooth installation by handling:
 - Copying files from the module registry
@@ -15,7 +15,7 @@ Using the CLI ensures smooth installation by handling:
 - Resolving internal and external dependencies
 - Adjusting `import` aliases in each file
 
-## init
+## `init`
 
 Use the `init` command to create a new project using our Node.js template or to add a `.config/modules.json` file to an existing project.
 
@@ -36,7 +36,7 @@ Options:
   -h, --help       Display help for the command
 ```
 
-## add
+## `add`
 
 The `add` command allows you to add new API modules to your project. It checks if both `package.json` and `.config/modules.json` exist in the project directory. 
 If these files are missing, use the [init](#init) command first.
