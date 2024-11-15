@@ -1,4 +1,5 @@
 import { configDefaults, defineConfig } from "vitest/config";
+import path from "path";
 
 export default defineConfig({
   test: {
@@ -12,16 +13,19 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       exclude: [
         ...configDefaults.coverage.exclude || [],
-        "repositories/*",
-        "schemaValidators/*",
-        "**/router/*",
+        "**/repositories/*",
+        "**/schemas/*",
+        "**/routes/*",
         "**/middleware/*",
         "**/errors/*"
       ],
     },
     env: {},
-    alias: {
-      "@/": new URL("./", import.meta.url).pathname,
-    },
+    alias: [
+      {
+        find: new RegExp('^@/(.*)$'),
+        replacement: path.resolve(__dirname, './src/$1'),
+      }
+    ],
   },
 });

@@ -1,0 +1,41 @@
+---
+title: Testing
+description: Guide for running the tests that come with each API Module
+---
+
+Our API modules come with pre-written tests for controllers and middleware, making it easy to ensure your service functions as expected. 
+We have included the test coverage for each module in the documentation. 
+
+## Setup
+
+Make sure to configure `.env` variables in your `vitest.config.ts` file so the tests can run. You can use mock values.
+
+```json
+{
+  "env": {
+    "JWT_SECRET_KEY": "testSecretKey",
+    "JWT_ISSUER": "api.tests",
+    "S3_BUCKET_NAME": "mockBucketName",
+    "S3_BUCKET_REGION": "us-east-1",
+    "POSTMARK_SERVER_TOKEN": "xxxx-xxxxx-xxxx-xxxxx-xxxxxx"
+  }
+}
+```
+
+## Running Tests
+
+To execute tests, run the following command from the root of your project:
+
+```bash
+npm run test
+```
+
+## Coverage Report
+
+To generate a test coverage report, use:
+
+```bash
+npm run coverage
+```
+
+This command will create a detailed report, allowing you to identify which parts of your code are covered by tests.

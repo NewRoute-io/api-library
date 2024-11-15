@@ -33,21 +33,14 @@ Our CLI generates migration files for each module, making it easy to handle your
 
 > **NOTE:** All of our modules that have a DB repository implementation come with schema and migration files, which are added to your project when installing them.
 
-1. **Run Migrations** from your project root:
+We add a `package.json` file in `/src/db-migrations` to enable `db-migrate` to work with our ESM project. **Do not modify the contents of this file.**
 
+To run migrations, execute the following command from your project root:
 ```bash
 npm run migrate:up
 ```
 
-This command will execute migration files in the order specified, ensuring your database schema is up-to-date.
-
-3. **Rollback (Optional):** If you need to undo the latest migration, you can roll it back by running:
-
-```bash
-npm run migrate:down
-```
-
-This will reverse the latest migration, which is useful for testing changes or rolling back in development environments.
+To create new migration files for your SQL schemas, follow the `db-migrate` [package guide](https://db-migrate.readthedocs.io/en/latest/Getting%20Started/usage/#creating-migrations).
 
 ## Template Repository
 
