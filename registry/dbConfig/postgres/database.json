@@ -1,0 +1,4 @@
+{
+  "postgres": { "ENV": "PG_CONNECTION_STRING" },
+  "sql-file": true
+}
