@@ -1,27 +1,15 @@
 # Vratix API Module Library
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 ![GitHub License](https://img.shields.io/github/license/vratix-dev/api-library)
-<!-- ![NPM Downloads](https://img.shields.io/npm/dm/vratix) -->
+![NPM Downloads](https://img.shields.io/npm/dm/vratix)
 
-## Overview 
-Easy-to-use, open-source modules that implement common API logic for seamless integration into Node.js APIs.
+## TL;DR
 
-We created this library of reusable API modules to streamline API development. As backend developers, we often found ourselves doing repetitive work or copying outdated code from old projects and inconsistent online sources.
-
-This led us to build a high-quality repository of reusable API modules that address common functionality used in every backend service. 
-In the age of AI code assistants, these modules remain reliably crafted by developers, following best practices with minimal assumptions. 
-This makes it easy for any developer to integrate these modules into any API project with flexibility.
-
-Currently, the modules support **Express.js**, and we’re actively working to extend compatibility with other backend languages and popular Node.js frameworks.
-
-> **NOTE:** This isn’t just another package; it’s a source code repository you can copy and use — your code, your way. These modules are designed to serve as a solid foundation for API development, so feel free to adapt them to fit your unique needs.
-
-**We recommend using our CLI** to import modules into your codebase. The CLI automates file placement, manages external dependencies, sets up database repositories, and resolves module imports.
-
-Stop reinventing the wheel. Start innovating where it counts.
-
-## Table of Contents
-
+Use the `init` command to create a new Node.js project: 
+```bash
+npx vratix init
+```
+---
 - [Overview](#overview)
 - [Installation](#installation)
 - [Modules Documentation](#modules)
@@ -31,6 +19,18 @@ Stop reinventing the wheel. Start innovating where it counts.
 - [Configuration](./docs/config.mdx)
 - [The CLI](./docs/cli.mdx)
 - [License](LICENSE)
+
+## Overview 
+We created this library of reusable API modules to simplify API development because we were wasting too much time setting up basic functionality and researching the latest backend best practices.
+We wanted a repository of high-quality API modules we can reuse, copy and paste into our projects and have a working backend in seconds. 
+
+Currently, the modules work for **Express.js**, however, we’re actively working to extend compatibility with other backend languages and popular Node.js frameworks. 
+We would be more than happy for you to contribute and help us achieve this faster.
+
+> This isn’t just another package; it’s a source code repository you can copy and use — your code, your way.  
+The modules are designed to be a solid foundation for any API service, **you should customize them to fit your unique needs**.
+
+**We recommend using our CLI** to import modules into your codebase. It automates file placement, manages external dependencies, sets up database repositories and migrations, and resolves module imports.
 
 ## Installation
 
