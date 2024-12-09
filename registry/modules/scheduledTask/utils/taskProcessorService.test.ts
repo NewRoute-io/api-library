@@ -180,13 +180,11 @@ describe("TaskScheduler", () => {
     await sleep(2000);
 
     expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task1,
       version: 1,
       status: "PROCESSING",
     });
 
     expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task1,
       version: 2,
       status: "ERROR",
       retries: 1,
@@ -257,8 +255,8 @@ describe("TaskScheduler", () => {
         retries: 1,
       })
     );
-    expect((updateTaskArgCaptor as unknown as Task).runAfter?.getTime()).toBeGreaterThan(new Date(task1?.runAfter?.getTime() ?? 0+ 1999).getTime());
-    expect((updateTaskArgCaptor as unknown as Task).runAfter?.getTime()).toBeLessThan(new Date(new Date().getTime() + 4000).getTime());
+    expect((updateTaskArgCaptor as unknown as Task).nextRetryTime?.getTime()).toBeGreaterThan(new Date(task1?.runAfter?.getTime() ?? 0+ 1999).getTime());
+    expect((updateTaskArgCaptor as unknown as Task).nextRetryTime?.getTime()).toBeLessThan(new Date(new Date().getTime() + 4000).getTime());
 
 
     expect(exampleProcessor).toHaveBeenCalledOnce();

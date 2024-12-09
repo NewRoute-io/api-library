@@ -43,14 +43,17 @@ export class TaskProcessorService {
     const retryTime = retryPolicy.getRetryTime(task, error);
     const newStatus: TaskStatus = retryTime != null ? "WAITING" : "ERROR";
 
-    const preparedTask = {
+    const preparedUpdate = {
       ...task,
       status: newStatus,
-      runAfter: retryTime,
+      retryTime: retryTime,
+      lastAttemptTime: new Date(),
       retries: task.retries + 1,
-    }
+    } as Task;
 
-    const updatedTask = await this.scheduledTaskRepository.updateTask(preparedTask);
+    const updatedTask = await this.scheduledTaskRepository.updateTask(
+      preparedUpdate
+    );
 
     return updatedTask;
   }
@@ -83,27 +86,21 @@ export class TaskProcessorService {
       const startedTask = await this.handleProcessingStarted(task);
       try {
         await processor(startedTask.payload);
-        const successfulTask = await this.handleSuccessfulProcessing(
-          startedTask
-        );
+        await this.handleSuccessfulProcessing(startedTask);
       } catch (error) {
         console.error(`Failed to process task id:${task.id}`, error);
-        const failedTask = await this.handleFailedProcessing(
-          startedTask,
-          error
-        );
+        await this.handleFailedProcessing(startedTask, error);
       }
     } catch (error) {
       console.error(`Failed to start processing task id:${task.id}`, error);
-      const failedTask = await this.handleFailedProcessing(task, error);
+      await this.handleFailedProcessing(task, error);
     }
   }
 
   async processTasks(): Promise<void> {
     while (true) {
-      const tasks = await this.submitTasksForProcessing(
-        this.processingBatchSize
-      ) ?? [];
+      const tasks =
+        (await this.submitTasksForProcessing(this.processingBatchSize)) ?? [];
 
       const asyncProcessors = tasks.map(this.processTask);
 
