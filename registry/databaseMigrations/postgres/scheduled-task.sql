@@ -13,5 +13,7 @@ CREATE TABLE tasks (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_tasks_status_run_after ON tasks (status, run_after);
-CREATE INDEX idx_tasks_status_next_retry_time ON tasks (status, next_retry_time);
+CREATE INDEX idx_tasks_status ON tasks (status);
+CREATE INDEX idx_tasks_run_after ON tasks (run_after);
+CREATE INDEX idx_tasks_next_retry_time ON tasks (next_retry_time);
+CREATE INDEX idx_tasks_last_attempt_time ON tasks (last_attempt_time);
