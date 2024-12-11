@@ -1,9 +1,10 @@
-import { describe, beforeEach, it, vi, expect } from "vitest";
+import { describe, beforeEach, it, vi, expect, afterAll } from "vitest";
 import { TaskProcessorService } from "./taskProcessorService.js";
 import { createScheduledTaskRepository } from "@/repositories/scheduledTask.postgres.js";
 import { TaskRegistry } from "./taskRegistry.js";
 import { ScheduledTaskRepository } from "@/repositories/scheduledTask.interface.js";
 import { TaskScheduler } from "./taskScheduler.js";
+import { pgPool } from "@/repositories/connection.postgres.js";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -12,6 +13,10 @@ describe.only("TaskScheduler", () => {
   let taskRegistry: TaskRegistry;
   let taskProcessorService: TaskProcessorService;
   let taskScheduler: TaskScheduler;
+
+  afterAll(()=>{
+    pgPool.query("TRUNCATE TASKS")
+  })
 
   beforeEach(() => {
     TaskRegistry.destroy()
@@ -60,7 +65,7 @@ describe.only("TaskScheduler", () => {
 
     expect(processor).not.toHaveBeenCalled();
 
-    await sleep(2050);
+    await sleep(2500);
     expect(processor).toHaveBeenCalledWith(expect.objectContaining(payload));
 
     const finalTask = await scheduledTaskRepository.getTaskById(task.id!)
