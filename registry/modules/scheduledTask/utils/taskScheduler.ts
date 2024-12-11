@@ -17,7 +17,7 @@ export class TaskScheduler {
     type: string,
     payload: TPayload,
     scheduledTime: Date = new Date()
-  ): Promise<void> {
+  ): Promise<Task> {
     if (!this.registry.get(type)) {
       throw new Error(
         `Unknown task type: "${type}". Register a processor first.`
@@ -46,5 +46,7 @@ export class TaskScheduler {
     if (savedTask.status === "SUBMITTED") {
       this.taskProcessorService.processTask(savedTask)
     }
+
+    return savedTask
   }
 }

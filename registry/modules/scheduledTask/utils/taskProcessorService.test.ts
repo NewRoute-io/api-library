@@ -10,7 +10,7 @@ import { ExponentialBackoffRetryPolicy } from "./taskRetryPolicy/exponentialBack
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe("TaskScheduler", () => {
+describe("TaskProcessor", () => {
   let taskProcessorService: TaskProcessorService;
   let mockScheduledTaskRepository: ScheduledTaskRepository;
   let mockRegistry: TaskRegistry;
@@ -103,37 +103,37 @@ describe("TaskScheduler", () => {
 
     await sleep(5000);
 
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task1,
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(expect.objectContaining({
+      type: task1.type,
       version: 1,
       status: "PROCESSING",
-    });
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task2,
+    }));
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(expect.objectContaining({
+      type: task2.type,
       version: 1,
       status: "PROCESSING",
-    });
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task3,
+    }));
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(expect.objectContaining({
+      type: task3.type,
       version: 1,
       status: "PROCESSING",
-    });
+    }));
 
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task1,
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(expect.objectContaining({
+      type: task1.type,
       version: 2,
       status: "DONE",
-    });
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task2,
+    }));
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(expect.objectContaining({
+      type: task2.type,
       version: 2,
       status: "DONE",
-    });
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task3,
+    }));
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(expect.objectContaining({
+      type: task3.type,
       version: 2,
       status: "DONE",
-    });
+    }));
 
     expect(exampleProcessor).toHaveBeenCalledOnce();
     expect(example1Processor).toHaveBeenCalledOnce();
@@ -179,17 +179,27 @@ describe("TaskScheduler", () => {
 
     await sleep(2000);
 
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      version: 1,
-      status: "PROCESSING",
-    });
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 1,
+        type: "example",
+        payload: {},
+        status: "PROCESSING",
+        retries: 0,
+        version: 1,
+      })
+    );
 
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      version: 2,
-      status: "ERROR",
-      retries: 1,
-      runAfter: null,
-    });
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 1,
+        type: "example",
+        payload: {},
+        status: "ERROR",
+        retries: 1,
+        version: 2,
+      })
+    );
 
     expect(exampleProcessor).toHaveBeenCalledOnce();
   }, 10000);
@@ -213,7 +223,7 @@ describe("TaskScheduler", () => {
 
     (mockScheduledTaskRepository.updateTask as Mock)
       .mockImplementation((task: Task) => {
-        updateTaskArgCaptor = task
+        updateTaskArgCaptor = task;
         return {
           ...task,
           version: task.version + 1,
@@ -241,23 +251,37 @@ describe("TaskScheduler", () => {
 
     await sleep(2000);
 
-    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith({
-      ...task1,
-      version: 1,
-      status: "PROCESSING",
-    });
+    expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 1,
+        type: "example",
+        payload: {},
+        status: "PROCESSING",
+        retries: 0,
+        version: 1,
+      })
+    );
 
     expect(mockScheduledTaskRepository.updateTask).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 1,
-        version: 2,
+        type: "example",
+        payload: {},
         status: "WAITING",
         retries: 1,
+        version: 2,
       })
     );
-    expect((updateTaskArgCaptor as unknown as Task).nextRetryTime?.getTime()).toBeGreaterThan(new Date(task1?.runAfter?.getTime() ?? 0+ 1999).getTime());
-    expect((updateTaskArgCaptor as unknown as Task).nextRetryTime?.getTime()).toBeLessThan(new Date(new Date().getTime() + 4000).getTime());
 
+    console.log(updateTaskArgCaptor)
+    expect(
+      (updateTaskArgCaptor as unknown as Task).nextRetryTime?.getTime()
+    ).toBeGreaterThan(
+      new Date(task1?.runAfter?.getTime() ?? 0 + 1999).getTime()
+    );
+    expect(
+      (updateTaskArgCaptor as unknown as Task).nextRetryTime?.getTime()
+    ).toBeLessThan(new Date(new Date().getTime() + 4000).getTime());
 
     expect(exampleProcessor).toHaveBeenCalledOnce();
   }, 10000);

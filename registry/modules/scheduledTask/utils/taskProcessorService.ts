@@ -30,7 +30,12 @@ export class TaskProcessorService {
   }
 
   private async handleProcessingStarted(task: Task) {
-    return this.updateTaskStatus(task, "PROCESSING");
+    return this.scheduledTaskRepository.updateTask(
+      {...task,
+        status: "PROCESSING",
+        lastAttemptTime: new Date()
+      }
+    );
   }
 
   private async handleFailedProcessing(
@@ -40,13 +45,13 @@ export class TaskProcessorService {
     const taskRegistration = this.registry.get(task.type);
     const retryPolicy = taskRegistration?.retryPolicy ?? new NoRetryPolicy();
 
-    const retryTime = retryPolicy.getRetryTime(task, error);
-    const newStatus: TaskStatus = retryTime != null ? "WAITING" : "ERROR";
+    const nextRetryTime = retryPolicy.getRetryTime(task, error);
+    const newStatus: TaskStatus = nextRetryTime != null ? "WAITING" : "ERROR";
 
     const preparedUpdate = {
       ...task,
       status: newStatus,
-      retryTime: retryTime,
+      nextRetryTime: nextRetryTime,
       lastAttemptTime: new Date(),
       retries: task.retries + 1,
     } as Task;

@@ -36,7 +36,7 @@ export const createScheduledTaskRepository = (): ScheduledTaskRepository => {
                 created_at,
                 updated_at
             FROM tasks
-            WHERE id = :id;
+            WHERE id = $1;
           `,
         values: [taskId],
       };
@@ -140,6 +140,10 @@ export const createScheduledTaskRepository = (): ScheduledTaskRepository => {
       };
 
       const result = await pgPool.query(query).then((data) => data.rows.at(0));
+
+      if (result == null) {
+        throw Error("Update failed");
+      }
       return rowMapper(result);
     },
     submitTasks: (limit: number) => {
@@ -148,10 +152,11 @@ export const createScheduledTaskRepository = (): ScheduledTaskRepository => {
         text: `
             WITH tasks_for_submission AS (
                 SELECT id, version FROM tasks WHERE
-                status = 'WAITING' AND (
+      (status = 'PROCESSING' AND last_attempt_time IS NOT NULL AND last_attempt_time < NOW() - interval '2' second) OR
+                (status = 'WAITING' AND (
                 (run_after < NOW() AND next_retry_time IS NULL) OR
                 (next_retry_time IS NOT NULL AND next_retry_time < NOW())
-                ) ORDER BY COALESCE(next_retry_time, run_after) ASC LIMIT $1
+                )) ORDER BY COALESCE(next_retry_time, run_after) ASC LIMIT $1
             )
             UPDATE tasks SET  
                 version = tasks.version + 1,
