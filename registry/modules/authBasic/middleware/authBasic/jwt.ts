@@ -8,11 +8,12 @@ import { notAuthenticated, invalidAccessToken } from "@/modules/authBasic/utils/
 const userRepository = createUserRepository();
 
 /**
- * Middleware that can be used to protect a route/endpoint
+ * This middleware can be used to protect a route or a single endpoint. 
+ * Add it before any authorization middleware. 
+ * 
+ * It will append the current user object to `req.user`
  *
- * Extracts JWT token from the `Authorization` header with scheme `bearer`
- *
- * @see {scheme} To define a custom Authorization header JWT scheme
+ * Extracts JWT token from the `authorization` header with scheme `B/bearer`
  */
 export const protectedRoute: RequestHandler = async (req, _, next) => {
   const authHeader = req.header("authorization");

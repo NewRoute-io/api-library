@@ -10,7 +10,6 @@ export const globalErrorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
-  // TODO: Replace with proper logger, e.g. winston
   if (process.env.NODE_ENV !== "production") {
     console.error(`Timestamp: ${new Date().toISOString()}`);
     console.error("Error:", err);
