@@ -21,8 +21,6 @@ const TokenManager = <T extends string | Buffer | object>(
   secretOrPublicKey: string,
   options: jwt.SignOptions | jwt.VerifyOptions
 ) => {
-
-  // TODO: Replace with a package that checks if all .env variables in .env.sample are configured on build
   if (!JWT_SECRET_KEY || !JWT_ISSUER) {
     throw jwtEnvVariablesMissing();
   }
